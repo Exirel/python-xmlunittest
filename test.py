@@ -175,7 +175,7 @@ class TestXmlTestCase(unittest.TestCase):
     def test_assertXmlNode_tag_text(self):
         """Asserts assertXmlNode raises when node is invalid.
 
-        Method assertXmlNode raise if node has not the expected tag name
+        Method assertXmlNode raises if node has not the expected tag name
         or the expected text value.
 
         """
@@ -196,86 +196,134 @@ class TestXmlTestCase(unittest.TestCase):
         with self.assertRaises(test_case.failureException):
             test_case.assertXmlNode(root, tag='noRoot', text='invalid')
 
-    # -------------------------------------------------------------------------
+    def test_assertXmlNode_text_in(self):
+        """Asserts assertXmlNode raises when node is invalid.
 
-    def test_assertXpathExistForEachNodes(self):
-        """Asserts assertXpathExistForEachNodes raises when validation failed.
-
-        Method assertXpathExistForEachNodes raises when the list of XPath
-        expressions returns None for any node of the given nodes.
+        Method assertXmlNode raises if node's text value is not in the list
+        of valid values.
 
         """
-        test_case = XmlTestCase(methodName='assertXpathExistForEachNodes')
+        test_case = XmlTestCase(methodName='assertXmlNode')
         data = """<?xml version="1.0" encoding="UTF-8" ?>
-        <root>
-            <child att="1">
-                <sub subAtt="input"/>
-                <sub subAtt="none"/>
-                <sub/>
-            </child>
-            <child att="2">
-                <sub subAtt="input"/>
-            </child>
+        <root>valid</root>"""
+
+        root = test_case.assertXmlDocument(data)
+
+        test_case.assertXmlNode(root, text_in=['valid', 'ok'])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlNode(root, text_in=['invalid', 'ok'])
+
+    # -------------------------------------------------------------------------
+
+    def test_assertXpathsExist(self):
+        """Asserts assertXpathsExist raises when validation failed.
+
+        Method assertXpathsExist raises when any xpath does not select a least
+        one result.
+
+        """
+        test_case = XmlTestCase(methodName='assertXpathsExist')
+        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        <root att="exists">
+            <sub subAtt="input"/>
+            <sub/>
         </root>"""
 
         root = test_case.assertXmlDocument(data)
-        required_for_each = ['@att',
-                             './sub',
-                             './sub[@subAtt="input"]']
-        test_case.assertXpathExistForEachNodes(list(root), required_for_each)
+        xpaths = ['@att', './sub', './sub[@subAtt="input"]']
+        test_case.assertXpathsExist(root, xpaths)
 
         with self.assertRaises(test_case.failureException):
-            test_case.assertXpathExistForEachNodes(list(root), ['@invalidAtt'])
+            test_case.assertXpathsExist(root, ['@invalidAtt'])
 
         with self.assertRaises(test_case.failureException):
-            test_case.assertXpathExistForEachNodes(list(root),
-                                                 ['./invalidChild'])
+            test_case.assertXpathsExist(root, ['./invalidChild'])
 
         with self.assertRaises(test_case.failureException):
-            test_case.assertXpathExistForEachNodes(list(root),
-                                                 ['./sub[@subAtt="none"]'])
+            test_case.assertXpathsExist(root, ['./sub[@subAtt="invalid"]'])
 
     # -------------------------------------------------------------------------
 
-    def test_assertXpathUniqueForEachNodes(self):
-        """Asserts assertXpathUniqueForEachNodes raises when validation failed.
+    def test_assertXpathsOnlyOne(self):
+        """Asserts assertXpathsOnlyOne raises when validation failed.
 
-        Method assertXpathUniqueForEachNodes raises when one of XPath
-        expressions returns does not returns one result and exactly one result.
+        Method assertXpathsOnlyOne raises when one of XPath
+        expressions does not select one and exactly one result.
 
         """
-        test_case = XmlTestCase(methodName='assertXpathUniqueForEachNodes')
+        test_case = XmlTestCase(methodName='assertXpathsOnlyOne')
         data = """<?xml version="1.0" encoding="UTF-8" ?>
         <root>
-            <child att="1">
-                <sub subAtt="unique"/>
-                <sub subAtt="notUnique"/>
-                <sub subAtt="notUnique"/>
-                <uniqueSub/>
-                <onlyHere/>
-            </child>
-            <child att="2">
-                <sub subAtt="unique"/>
-                <uniqueSub/>
-            </child>
+            <sub subAtt="unique" id="1" />
+            <sub subAtt="notUnique" id="2"/>
+            <sub subAtt="notUnique" id="3"/>
+            <uniqueSub/>
         </root>"""
 
         root = test_case.assertXmlDocument(data)
         unique_for_each = ['./uniqueSub',
                            './sub[@subAtt="unique"]']
-        test_case.assertXpathUniqueForEachNodes(list(root), unique_for_each)
+        test_case.assertXpathsOnlyOne(root, unique_for_each)
 
         with self.assertRaises(test_case.failureException):
-            test_case.assertXpathUniqueForEachNodes(list(root),
-                                                    ['./invalidChild'])
+            test_case.assertXpathsOnlyOne(root, ['./invalidChild'])
 
         with self.assertRaises(test_case.failureException):
-            test_case.assertXpathUniqueForEachNodes(list(root),
-                                                ['./sub[@subAtt="notUnique"]'])
+            test_case.assertXpathsOnlyOne(root, ['./sub[@subAtt="notUnique"]'])
+
+    def test_assertXpathsUniqueValue(self):
+        """Asserts assertXpathsUniqueValue raises when validation failed.
+
+        Method assertXpathsUniqueValue raises when one of XPath expression
+        select does not returns unique results.
+
+        """
+        test_case = XmlTestCase(methodName='assertXpathsUniqueValue')
+        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        <root>
+            <sub subAtt="unique" id="1">unique 1</sub>
+            <sub subAtt="notUnique" id="2">unique 2</sub>
+            <sub subAtt="notUnique" id="3">unique 3</sub>
+            <multiple>twice</multiple>
+            <multiple>twice</multiple>
+        </root>"""
+        root = test_case.assertXmlDocument(data)
+
+        test_case.assertXpathsUniqueValue(root, ['./sub/@id',
+                                                 './sub/text()'])
 
         with self.assertRaises(test_case.failureException):
-            test_case.assertXpathUniqueForEachNodes(list(root),
-                                                    ['./onlyHere'])
+            test_case.assertXpathsUniqueValue(root, ['./sub/@subAtt'])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsUniqueValue(root, ['./multiple/text()'])
+
+    def test_assertXpathValues(self):
+        """Asserts assertXpathValues raises when validation failed.
+
+        Method assertXpathValues raises when not each XPath expression's result
+        is in the expected values.
+
+        """
+        test_case = XmlTestCase(methodName='assertXpathValues')
+        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        <root>
+            <sub id="1">a</sub>
+            <sub id="2">a</sub>
+            <sub id="3">b</sub>
+            <sub id="4">c</sub>
+        </root>"""
+        root = test_case.assertXmlDocument(data)
+
+        test_case.assertXpathValues(root, './sub/@id', ['1', '2', '3', '4'])
+        test_case.assertXpathValues(root, './sub/text()', ['a', 'b', 'c'])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathValues(root, './sub/@id', ['1', '2'])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathValues(root, './sub/text()', ['a', 'b'])
 
 
 if __name__ == "__main__":

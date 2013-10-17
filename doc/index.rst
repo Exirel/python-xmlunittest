@@ -43,7 +43,7 @@ see how :py:mod:`xmlunittest` can be used::
     
     class SampleTestCase(xmlunittest.XmlTestCase):
     
-        def test(self):
+        def test_sample(self):
             data = """<?xml version="1.0" encoding="UTF-8" ?>
             <root>
                 <child id="1">a</child>
@@ -53,7 +53,7 @@ see how :py:mod:`xmlunittest` can be used::
             </root>"""
 
             root = self.assertXmlDocument(data)
-            self.assertXpathUniqueValue(root, './child/@id')
+            self.assertXpathsUniqueValue(root, ['./child/@id'])
             self.assertXpathValues(root, './child/text()', ['a', 'b', 'c'])
 
 

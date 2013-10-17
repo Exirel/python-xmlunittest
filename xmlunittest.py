@@ -57,44 +57,83 @@ class XmlTestCase(unittest.TestCase):
         """Asserts `node` is an element node with expected tag and value.
 
         """
-        pass  # no assertion yet
+        # Assert `node` is an element node and not None or a string or
+        # anything like this
+        self.assertIsInstance(node, etree._Element)
 
-    def assertXpathExistForEachNodes(self, nodes, xpaths):
-        """Asserts `xpaths` are valid for each node of `nodes`.
+        if 'tag' in kwargs:
+            tag = kwargs.get('tag')
+            self.assertEquals(node.tag, tag)
+
+        if 'text' in kwargs:
+            self.assertEquals(node.text, kwargs.get('text'))
+
+        if 'text_in' in kwargs:
+            self.assertIn(node.text, kwargs.get('text_in'))
+
+    def assertXpathsExist(self, node, xpaths):
+        """Asserts `xpaths` are valid for each node of `selection`.
 
         """
         expressions = [etree.XPath(xpath) for xpath in xpaths]
-        for node in nodes:
-            for expression in expressions:
-                if not expression.evaluate(node):
-                    self.fail('No result found for XPath on element %s:\n'
-                              'XPath: %s\n'
-                              'Element:\n'
-                              '%s' % (node.tag,
-                                      expression.path,
-                                      etree.tostring(node, pretty_print=True)))
+        for expression in expressions:
+            if not expression.evaluate(node):
+                self.fail('No result found for XPath on element %s:\n'
+                          'XPath: %s\n'
+                          'Element:\n'
+                          '%s' % (node.tag,
+                                  expression.path,
+                                  etree.tostring(node, pretty_print=True)))
 
-    def assertXpathUniqueForEachNodes(self, nodes, xpaths):
-        """Asserts each xpath's result is unique for each node.
+    def assertXpathsOnlyOne(self, node, xpaths):
+        """Asserts each xpath's result returns only one element.
         """
         expressions = [etree.XPath(xpath) for xpath in xpaths]
-        for node in nodes:
-            for expression in expressions:
-                result = expression.evaluate(node)
-                if not result:
-                    self.fail('No result found for XPath on element %s:\n'
-                              'XPath: %s\n'
-                              'Element:\n'
-                              '%s' % (node.tag,
-                                      expression.path,
-                                      etree.tostring(node, pretty_print=True)))
-                count = len(result)
-                if count > 1:
-                    self.fail('Too many results found (%d) for XPath on '
-                              'element %s:\n'
-                              'XPath: %s\n'
-                              'Element:\n'
-                              '%s' % (count,
-                                      node.tag,
-                                      expression.path,
-                                      etree.tostring(node, pretty_print=True)))
+
+        for expression in expressions:
+            results = expression.evaluate(node)
+            if not results:
+                self.fail('No result found for XPath on element %s:\n'
+                          'XPath: %s\n'
+                          'Element:\n%s'
+                          % (node.tag, expression.path,
+                             etree.tostring(node, pretty_print=True)))
+            count = len(results)
+            if count > 1:
+                self.fail('Too many results found (%d) for XPath on '
+                          'element %s:\n'
+                          'XPath: %s\n'
+                          'Element:\n'
+                          '%s' % (count,
+                                  node.tag,
+                                  expression.path,
+                                  etree.tostring(node, pretty_print=True)))
+
+    def assertXpathsUniqueValue(self, node, xpaths):
+        """Asserts each xpath's value is unique in the selected elements.
+        """
+        expressions = [etree.XPath(xpath) for xpath in xpaths]
+
+        for expression in expressions:
+            results = expression.evaluate(node)
+
+            if len(results) != len(set(results)):
+                self.fail('Value is not unique for element %s:\n'
+                          'XPath: %s\n'
+                          'Element:\n%s'
+                          % (node.tag, expression.path,
+                             etree.tostring(node, pretty_print=True)))
+
+    def assertXpathValues(self, node, xpath, values):
+        """Asserts each xpath's value is in the expected values.
+        """
+        results = node.xpath(xpath)
+
+        for result in results:
+            if result not in values:
+                self.fail('Invalid value found for node %s\n'
+                          'XPath: %s\n'
+                          'Value found: %s\n'
+                          'Element:\n%s'
+                          % (node.tag, xpath, result,
+                             etree.tostring(node, pretty_print=True)))
