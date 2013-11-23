@@ -36,8 +36,8 @@ class XmlTestCase(unittest.TestCase):
         One can use this method on element node.
 
         """
-        assert prefix in node.nsmap
-        assert node.nsmap.get(prefix) == uri
+        self.assertIn(prefix, node.nsmap)
+        self.assertEquals(node.nsmap.get(prefix), uri)
 
     def assertXmlHasAttribute(self, node, attribute, **kwargs):
         """Asserts `node` has the given `attribute`.
@@ -49,9 +49,11 @@ class XmlTestCase(unittest.TestCase):
         assert attribute in node.attrib
 
         if 'expected_value' in kwargs:
-            assert node.attrib.get(attribute) == kwargs.get('expected_value')
+            self.assertEquals(node.attrib.get(attribute),
+                              kwargs.get('expected_value'))
         elif 'expected_values' in kwargs:
-            assert node.attrib.get(attribute) in kwargs.get('expected_values')
+            self.assertIn(node.attrib.get(attribute),
+                          kwargs.get('expected_values'))
 
     def assertXmlNode(self, node, **kwargs):
         """Asserts `node` is an element node with expected tag and value.
