@@ -31,7 +31,7 @@ class XmlTestCase(unittest.TestCase):
         return doc
 
     def assertXmlNamespace(self, node, prefix, uri):
-        """Asserts `node` declare namespace `uri` using `prefix`.
+        """Asserts `node` declares namespace `uri` using `prefix`.
 
         One can use this method on element node.
 
@@ -74,9 +74,7 @@ class XmlTestCase(unittest.TestCase):
             self.assertIn(node.text, kwargs.get('text_in'))
 
     def assertXpathsExist(self, node, xpaths):
-        """Asserts `xpaths` are valid for each node of `selection`.
-
-        """
+        """Asserts each XPath is valid for element `node`."""
         expressions = [etree.XPath(xpath) for xpath in xpaths]
         for expression in expressions:
             if not expression.evaluate(node):
@@ -88,8 +86,7 @@ class XmlTestCase(unittest.TestCase):
                                   etree.tostring(node, pretty_print=True)))
 
     def assertXpathsOnlyOne(self, node, xpaths):
-        """Asserts each xpath's result returns only one element.
-        """
+        """Asserts each xpath's result returns only one element."""
         expressions = [etree.XPath(xpath) for xpath in xpaths]
 
         for expression in expressions:
