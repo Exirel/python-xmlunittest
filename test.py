@@ -1,4 +1,7 @@
 # -*- conding: utf-8 -*-
+
+from __future__ import unicode_literals
+
 import unittest
 
 from lxml import etree
@@ -24,7 +27,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlDocument')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root/>"""
 
         root = test_case.assertXmlDocument(data)
@@ -43,7 +46,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlNamespace')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root xmlns:ns="uri"/>"""
 
         root = test_case.assertXmlDocument(data)
@@ -66,7 +69,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlHasAttribute')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root att="value" />"""
 
         root = test_case.assertXmlDocument(data)
@@ -83,7 +86,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlHasAttribute')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root att="value" />"""
 
         root = test_case.assertXmlDocument(data)
@@ -101,7 +104,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlHasAttribute')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root>
             <child att="1"/>
             <child att="3"/>
@@ -127,7 +130,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlNode')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root>text_value</root>"""
 
         root = test_case.assertXmlDocument(data)
@@ -147,7 +150,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlNode')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root>text_value</root>"""
 
         root = test_case.assertXmlDocument(data)
@@ -163,7 +166,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlNode')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root>text_value</root>"""
 
         root = test_case.assertXmlDocument(data)
@@ -180,7 +183,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlNode')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root>text_value</root>"""
 
         root = test_case.assertXmlDocument(data)
@@ -204,7 +207,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlNode')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root>valid</root>"""
 
         root = test_case.assertXmlDocument(data)
@@ -224,7 +227,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXpathsExist')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root att="exists">
             <sub subAtt="input"/>
             <sub/>
@@ -253,7 +256,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXpathsOnlyOne')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root>
             <sub subAtt="unique" id="1" />
             <sub subAtt="notUnique" id="2"/>
@@ -280,7 +283,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXpathsUniqueValue')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root>
             <sub subAtt="unique" id="1">unique 1</sub>
             <sub subAtt="notUnique" id="2">unique 2</sub>
@@ -307,7 +310,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXpathValues')
-        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root>
             <sub id="1">a</sub>
             <sub id="2">a</sub>
