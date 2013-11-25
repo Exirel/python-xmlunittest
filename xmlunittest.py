@@ -25,7 +25,7 @@ class XmlTestCase(unittest.TestCase):
         # no assertion yet
         try:
             doc = etree.fromstring(data)
-        except XMLSyntaxError, e:
+        except XMLSyntaxError as e:
             raise self.fail('Input is not a valid XML document: %s' % e)
 
         return doc
