@@ -37,7 +37,7 @@ class XmlTestCase(unittest.TestCase):
 
         """
         self.assertIn(prefix, node.nsmap)
-        self.assertEquals(node.nsmap.get(prefix), uri)
+        self.assertEqual(node.nsmap.get(prefix), uri)
 
     def assertXmlHasAttribute(self, node, attribute, **kwargs):
         """Asserts `node` has the given `attribute`.
@@ -49,7 +49,7 @@ class XmlTestCase(unittest.TestCase):
         assert attribute in node.attrib
 
         if 'expected_value' in kwargs:
-            self.assertEquals(node.attrib.get(attribute),
+            self.assertEqual(node.attrib.get(attribute),
                               kwargs.get('expected_value'))
         elif 'expected_values' in kwargs:
             self.assertIn(node.attrib.get(attribute),
@@ -65,10 +65,10 @@ class XmlTestCase(unittest.TestCase):
 
         if 'tag' in kwargs:
             tag = kwargs.get('tag')
-            self.assertEquals(node.tag, tag)
+            self.assertEqual(node.tag, tag)
 
         if 'text' in kwargs:
-            self.assertEquals(node.text, kwargs.get('text'))
+            self.assertEqual(node.text, kwargs.get('text'))
 
         if 'text_in' in kwargs:
             self.assertIn(node.text, kwargs.get('text_in'))
