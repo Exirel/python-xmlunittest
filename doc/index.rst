@@ -88,11 +88,50 @@ Document assertions
 .. py:method:: XmlTestCase.assertXmlDocument(data)
 
    :param string data: XML formated string
-   :rtype: lxm.etree._Element
+   :rtype: lxml.etree._Element
 
    Assert `data` is a valid XML formated string. This method will parse string
    with `lxml.etree.fromstring`. If parsing failed (raise an XMLSyntaxError),
    the test fails.
+
+
+.. py:method:: assertXmlPartial(partial_data, root_tag=None)
+
+   :param string partial_data: Partial document as XML formated string
+   :rtype: lxml.etree._Element
+
+   Assert `partial_data` is a partially XML formated string. This method will
+   encapsulate the string into a root element, and then try to parse the string
+   as a normal XML document.
+
+   If the parsing failed, test will fail. If the parsing's result does not
+   have any element child, the test will also fail, because it expects a
+   *partial document**, not just a string.
+
+   .. rubric:: Optional named arguments
+
+   :param string root_tag: Optional, root element's tag name
+
+   One can provide the root element's tag name to the method for his own
+   convenience.
+
+   .. rubric:: Example
+
+   ::
+
+      # ...
+
+      def test_custom_test(self):
+          data = """
+             <partial>a</partial>
+             <partial>b</partial>
+          """
+
+          root = self.assertXmlPartial(data)
+          # Make some assert on the result's document.
+          self.assertXpathValues(root, './partial/text()', ('a', 'b'))
+
+      # ...
 
 
 Element assertions
@@ -116,7 +155,7 @@ Element assertions
           data = """<?xml version="1.0" encoding="UTF-8" ?>
           <root xmlns:ns="uri"/>"""
 
-          root = test_case.assertXmlDocument(data)
+          root = self.assertXmlDocument(data)
 
           self.assertXmlNamespace(root, 'ns', 'uri')
 

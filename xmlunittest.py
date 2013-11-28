@@ -16,6 +16,8 @@ class XmlTestCase(unittest.TestCase):
     XML parsing uses python lxml.etree.
 
     """
+    default_partial_tag = 'partialTest'
+
     def assertXmlDocument(self, data):
         """Asserts `data` is an XML document and returns it.
 
@@ -27,6 +29,24 @@ class XmlTestCase(unittest.TestCase):
             doc = etree.fromstring(data)
         except XMLSyntaxError as e:
             raise self.fail('Input is not a valid XML document: %s' % e)
+
+        return doc
+
+    def assertXmlPartial(self, partial_data, root_tag=None):
+        """Asserts `data` is an XML partial document, and returns result."""
+        tag_name = (root_tag
+                        if root_tag is not None
+                        else self.default_partial_tag)
+        consolidated = '<%s>%s</%s>' % (tag_name, partial_data, tag_name)
+
+        try:
+            doc = etree.fromstring(consolidated)
+        except XMLSyntaxError as e:
+            raise self.fail('Input is not a valid partial XML document: %s'
+                            % e)
+
+        if not len(doc):
+            self.fail('Input does not have any elements to check.')
 
         return doc
 

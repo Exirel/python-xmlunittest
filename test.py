@@ -38,6 +38,63 @@ class TestXmlTestCase(unittest.TestCase):
 
     # -------------------------------------------------------------------------
 
+    def test_assertXmlPartial(self):
+        """Asserts assertXmlPartial raises when data is invalid.
+
+        Method assertXmlPartial must be able to take a partial XML formated
+        string and returns a valid XML document, or raise an error.
+
+        """
+        test_case = XmlTestCase(methodName='assertXmlPartial')
+        data = b"""<partial>1</partial>
+        <partial>2</partial>"""
+
+        root = test_case.assertXmlPartial(data)
+        self.assertIsInstance(root, etree._Element)
+
+        self.assertEqual(root.tag, test_case.default_partial_tag)
+        self.assertEqual(len(root), 2)
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlPartial(b'<invalidChar>&</invalidChar>')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlPartial(b'not even a partial XML document')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlPartial(b'<missingEndTag>')
+
+    def test_assertXmlPartial_name(self):
+        """Asserts assertXmlPartial raises when data is invalid.
+
+        Method assertXmlPartial accept a `root_tag` parameter to tell
+        method the root element's tag name.
+
+        """
+        test_case = XmlTestCase(methodName='assertXmlPartial')
+        data = b"""<partial>1</partial>
+        <partial>2</partial>"""
+
+        root = test_case.assertXmlPartial(data, root_tag='customTag')
+        self.assertIsInstance(root, etree._Element)
+
+        self.assertEqual(root.tag, 'customTag')
+        self.assertEqual(len(root), 2)
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlPartial(b'<invalidChar>&</invalidChar>',
+                                       root_tag='customTag')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlPartial(b'not even a partial XML document',
+                                       root_tag='customTag')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlPartial(b'<missingEndTag>',
+                                       root_tag='customTag')
+
+    # -------------------------------------------------------------------------
+
     def test_assertXmlNamespace(self):
         """Asserts assertXmlNamespace raises namespace is invalid.
 
