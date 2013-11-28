@@ -1,4 +1,6 @@
-# Python XML-Unittest
+===================
+Python XML-Unittest
+===================
 
 Anyone uses XML, for RSS, for configuration files, for... well, we all use XML
 for our own reasons (folk says one can not simply uses XML, but still...).
@@ -22,21 +24,23 @@ You will be able to test your XML document, and use the power of xpath to
 write tests that matter.
 
 
-## Links
+Links
+=====
 
 - Distribution: https://pypi.python.org/pypi/xmlunittest
 - Documentation: http://python-xmlunittest.readthedocs.org/en/latest/
 - Source: https://github.com/Exirel/python-xmlunittest
 
 
-## How to
+How to
+======
 
 - Extends xmlunittest.XmlTestCase
 - Write your tests, using the function or method that generate XML document
 - Use xmlunittest.XmlTestCase‘s assertion methods to validate
 - Keep your test readable
 
-Example:
+Example::
 
     from xmlunittest import XmlTestCase
     
