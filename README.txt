@@ -20,8 +20,8 @@ Here comes XML unittest TestCase: if you want to use the built-in unittest
 package (or if it is a requirement), and you are not afraid of using xpath
 expression with lxml, this library is made for you.
 
-You will be able to test your XML document, and use the power of xpath to
-write tests that matter.
+You will be able to test your XML document, and use the power of xpath and
+various schema languages to write tests that matter.
 
 
 Links
@@ -43,10 +43,10 @@ How to
 Example::
 
     from xmlunittest import XmlTestCase
-    
-    
+
+
     class CustomTestCase(XmlTestCase):
-    
+
         def test_my_custom_test(self):
             # In a real case, data come from a call to your function/method.
             data = """<?xml version="1.0" encoding="UTF-8" ?>
@@ -55,10 +55,10 @@ Example::
                 <leaf id="2" active="on" />
                 <leaf id="3" active="off" />
             </root>"""
-    
+
             # Everything starts with `assertXmlDocument`
             root = self.assertXmlDocument(data)
-    
+
             # Check namespace
             self.assertXmlNamespace(root, 'ns', 'uri')
             # Check

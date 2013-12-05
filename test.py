@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import io
 import unittest
 
 from lxml import etree
@@ -426,6 +427,92 @@ class TestXmlTestCase(unittest.TestCase):
         with self.assertRaises(test_case.failureException):
             test_case.assertXmlEquivalent(got_root, expected)
 
+    # Resources for assertXmlValid
+
+    _valid_xml = b"""<?xml version="1.0" encoding="UTF-8" ?>
+    <root>
+      <child name="hello">blah blah</child>
+      <child>hello</child>
+    </root>
+    """
+    _valid_xml = etree.XML(_valid_xml)
+
+    _invalid_xml = b"""<?xml version="1.0" encoding="UTF-8" ?>
+    <root>
+      <child name="hello">blah blah</child>
+      <father>hello</father>
+    </root>
+    """
+    _invalid_xml = etree.XML(_invalid_xml)
+
+    def _test_assertXMLValid(self, schema):
+        test_case = XmlTestCase(methodName='assertXmlEquivalent')
+
+        # Using a valid doc
+        test_case.assertXmlValid(self._valid_xml, schema)
+
+        # Using an invalid doc
+        with self.assertRaises(self.failureException) as cm:
+            test_case.assertXmlValid(self._invalid_xml, schema)
+
+        # The error message mentions the unwanted element
+        self.assertIn('father', str(cm.exception))
+
+    def test_assertXmlValidDTD(self):
+        """XML validation against DTD
+        """
+        dtd = """<!ELEMENT root (child*)>
+        <!ELEMENT child (#PCDATA)>
+        <!ATTLIST child name CDATA #IMPLIED>
+        """
+        dtd = etree.DTD(io.StringIO(dtd))
+        self._test_assertXMLValid(dtd)
+
+    def test_assertXmlValidXSchema(self):
+        """XML validation against XSchema
+        """
+        xschema = """<?xml version="1.0"?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <xsd:element name="root">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="child" minOccurs="0" maxOccurs="unbounded">
+                  <xsd:complexType>
+                    <xsd:simpleContent>
+                      <xsd:extension base="xsd:string">
+                        <xsd:attribute name="name" type="xsd:string" use="optional" />
+                      </xsd:extension>
+                    </xsd:simpleContent>
+                  </xsd:complexType>
+                </xsd:element>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:schema>
+        """
+        xschema = etree.XML(xschema)
+        xschema = etree.XMLSchema(xschema)
+        self._test_assertXMLValid(xschema)
+
+    def test_assertXmlValidRelaxNg(self):
+        """XML validation against RelaxNG
+        """
+        relaxng = """<rng:element name="root" xmlns:rng="http://relaxng.org/ns/structure/1.0">
+          <rng:zeroOrMore>
+            <rng:element name="child">
+              <rng:optional>
+                <rng:attribute name="name">
+                  <rng:text />
+                </rng:attribute>
+              </rng:optional>
+              <rng:text />
+            </rng:element>
+          </rng:zeroOrMore>
+        </rng:element>
+        """
+        relaxng = etree.XML(relaxng)
+        relaxng = etree.RelaxNG(relaxng)
+        self._test_assertXMLValid(relaxng)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test_assertXmlDocument']
