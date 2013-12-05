@@ -446,7 +446,7 @@ class TestXmlTestCase(unittest.TestCase):
     _invalid_xml = etree.XML(_invalid_xml)
 
     def _test_assertXMLValid(self, schema):
-        test_case = XmlTestCase(methodName='assertXmlEquivalent')
+        test_case = XmlTestCase(methodName='assertXmlValid')
 
         # Using a valid doc
         test_case.assertXmlValid(self._valid_xml, schema)
