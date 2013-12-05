@@ -1,10 +1,12 @@
 """Unittest module for XML testing purpose."""
 from __future__ import unicode_literals
 
+import doctest
 import unittest
 
 from lxml import etree
 from lxml.etree import XMLSyntaxError
+from lxml.doctestcompare import LXMLOutputChecker, PARSE_XML
 
 
 class XmlTestCase(unittest.TestCase):
@@ -156,3 +158,28 @@ class XmlTestCase(unittest.TestCase):
                           'Element:\n%s'
                           % (node.tag, xpath, result,
                              etree.tostring(node, pretty_print=True)))
+
+    def assertXmlEquivalent(self, got, expect):
+        """Asserts both xml parse to the same results
+        `got` may be an XML string or lxml Element
+        """
+        checker = LXMLOutputChecker()
+
+        if isinstance(got, etree._Element):
+            got = etree.tostring(got)
+
+        if not checker.check_output(expect, got, PARSE_XML):
+            message = checker.output_difference(doctest.Example("", expect), got, PARSE_XML)
+            self.fail(message)
+
+    def assertXmlValid(self, xml, schema):
+        """Validates xml (string or lxml _Element) against a schema.
+
+        :param xml: XML string or lxml Element to validate
+        :param schema: a DTD, XSchema, RelaxNG or Schematron instance
+        """
+        if not isinstance(xml, etree._Element):
+            xml = etree.XML(xml)
+        if not schema.validate(xml):
+            message = schema.error_log.last_error
+            self.fail(message)

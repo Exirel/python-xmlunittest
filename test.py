@@ -385,6 +385,47 @@ class TestXmlTestCase(unittest.TestCase):
         with self.assertRaises(test_case.failureException):
             test_case.assertXpathValues(root, './sub/text()', ['a', 'b'])
 
+    def test_assertXmlEquivalent(self):
+        """Asserts assertXmlEquivalent raises when comparison failed.
+        """
+        test_case = XmlTestCase(methodName='assertXmlEquivalent')
+
+        # Same XML (with different spacings placements and attrs order)
+        got = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root>
+            <tag foo="bar" bar="foo">foo</tag>
+        </root>"""
+        got_root = test_case.assertXmlDocument(got)
+        expected = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root><tag bar="foo" foo="bar"> foo </tag></root>"""
+
+        test_case.assertXmlEquivalent(got, expected)
+        test_case.assertXmlEquivalent(got_root, expected)
+
+        # Same XML, but with different namespace prefixes
+        got = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns:foo="mynamespace">
+            <foo:tag>foo</foo:tag>
+        </root>"""
+        got_root = test_case.assertXmlDocument(got)
+        expected = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns:bar="mynamespace">
+            <bar:tag>foo</bar:tag>
+        </root>"""
+        test_case.assertXmlEquivalent(got, expected)
+        test_case.assertXmlEquivalent(got_root, expected)
+
+        # Check comparison failure
+        got = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns:foo="mynamespace">
+            <foo:tag> difference here </foo:tag>
+        </root>"""
+        got_root = test_case.assertXmlDocument(got)
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlEquivalent(got, expected)
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlEquivalent(got_root, expected)
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test_assertXmlDocument']
