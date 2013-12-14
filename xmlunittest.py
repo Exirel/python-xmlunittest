@@ -10,6 +10,9 @@ from lxml.etree import XMLSyntaxError
 from lxml.doctestcompare import LXMLOutputChecker, PARSE_XML
 
 
+__all__ = ['XmlTestMixin', 'XmlTestCase']
+
+
 class XmlTestMixin(object):
     """Base mixin class for XML unittest.
 
@@ -156,19 +159,6 @@ class XmlTestMixin(object):
                           % (node.tag, xpath, result,
                              etree.tostring(node, pretty_print=True)))
 
-    def assertXmlEquivalent(self, got, expect):
-        """Asserts both xml parse to the same results
-        `got` may be an XML string or lxml Element
-        """
-        checker = LXMLOutputChecker()
-
-        if isinstance(got, etree._Element):
-            got = etree.tostring(got)
-
-        if not checker.check_output(expect, got, PARSE_XML):
-            message = checker.output_difference(doctest.Example("", expect), got, PARSE_XML)
-            self.fail(message)
-
     def assertXmlValidDTD(self, node, dtd=None, filename=None):
         """Asserts XML node is valid according to the given DTD."""
         schema = None
@@ -225,6 +215,24 @@ class XmlTestMixin(object):
 
         if not schema.validate(node):
             self.fail(schema.error_log.last_error)
+
+    def assertXmlEquivalentOutputs(self, data, expected):
+        """Asserts both XML outputs are equivalent.
+
+        This assertion use the powerful but dangerous feature of
+        LXMLOutputChecker. Powerful because one can compare two XML document
+        in their meaning, but dangerous because sometimes there is more to
+        check than just a kind of output.
+
+        See LXMLOutputChecker documentation for more information.
+
+        """
+        checker = LXMLOutputChecker()
+
+        if not checker.check_output(expected, data, PARSE_XML):
+            message = checker.output_difference(doctest.Example("", expected),
+                                                data, PARSE_XML)
+            self.fail(message)
 
 
 class XmlTestCase(unittest.TestCase, XmlTestMixin):
