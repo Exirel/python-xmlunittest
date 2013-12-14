@@ -413,64 +413,6 @@ XPath expression assertions
       # ...
 
 
-XML documents comparison assertion
-----------------------------------
-
-.. py:method:: XmlTestMixin.assertXmlEquivalent(got, expect)
-
-   :param got: XML as text or Element node
-   :param expect: XML as text
-
-   Asserts both XML are equivalent. The comparison ignores spaces within nodes
-   and namespaces - if any - may be associated to diffrerent prefixes.
-
-   If a difference is found, a :class:`AssertionError` is raised. You can have
-   the detailed mismatch in ``str(exc)``, ``exc`` being the raised exception.
-
-   .. rubric:: Example
-
-   ::
-
-      # ...
-
-      def test_custom_test(self):
-          # Same XML (with different spacings placements and attrs order)
-          got = b"""<?xml version="1.0" encoding="UTF-8" ?>
-          <root>
-              <tag foo="bar" bar="foo">foo</tag>
-          </root>"""
-          got_root = self.assertXmlDocument(got)
-          expected = b"""<?xml version="1.0" encoding="UTF-8" ?>
-          <root><tag bar="foo" foo="bar"> foo </tag></root>"""
-
-          self.assertXmlEquivalent(got, expected)
-          self.assertXmlEquivalent(got_root, expected)
-
-          # Same XML, but with different namespace prefixes
-          got = b"""<?xml version="1.0" encoding="UTF-8" ?>
-          <root xmlns:foo="mynamespace">
-              <foo:tag>foo</foo:tag>
-          </root>"""
-          got_root = self.assertXmlDocument(got)
-          expected = b"""<?xml version="1.0" encoding="UTF-8" ?>
-          <root xmlns:bar="mynamespace">
-              <bar:tag>foo</bar:tag>
-          </root>"""
-          self.assertXmlEquivalent(got, expected)
-          self.assertXmlEquivalent(got_root, expected)
-
-          # Check comparison failure
-          got = b"""<?xml version="1.0" encoding="UTF-8" ?>
-          <root xmlns:foo="mynamespace">
-              <foo:tag> difference here </foo:tag>
-          </root>"""
-          got_root = self.assertXmlDocument(got)
-          with self.assertRaises(self.failureException):
-              self.assertXmlEquivalent(got, expected)
-          with self.assertRaises(self.failureException):
-              self.assertXmlEquivalent(got_root, expected)
-
-
 XML schema conformance assertion
 --------------------------------
 
@@ -648,3 +590,78 @@ your own schema objects in these various schema languages.
           """
           root = test_case.assertXmlDocument(data)
           self.assertXmlValidRelaxNG(root, filename=relaxng_filename)
+
+
+XML documents comparison assertion
+----------------------------------
+
+Sometimes, one may want to check a global XML document, because he know exactly
+what is expected, and can rely on a kind of "string compare". Of course, XML
+is not a simple string, and requires more than just an
+``assert data == expected``, because order of elements can vary, order of
+attributes, etc.
+
+In these cases, one can use the powerful - also dangerous - feature of `LXML
+Output Checker`. See also the documentation of the module
+`doctestcompare <http://lxml.de/api/lxml.doctestcompare-module.html>`_ for
+more information on the underlying implementation.
+
+And as always, remember that the whole purpose of this :py:mod:`xmlunittest`
+is to **not** compare XML formated string. But, whatever, this function could
+help. May be.
+
+.. py:method:: XmlTestMixin.assertXmlEquivalentOutputs(data, expected)
+
+   :param string data: XML formated string to check
+   :param string expected: XML formated string used as reference
+
+   Asserts both XML formated string are equivalent. The comparison ignores
+   spaces within nodes and namespaces may be associated to diffrerent prefixes,
+   thus requiring only the same URL.
+
+   If a difference is found, an :py:exc:`AssertionError` is raised, with the
+   comparison failure's message as error's message.
+
+   .. note::
+
+      The name ``assertXmlEquivalentOutputs`` is cleary a way to prevent user
+      to missunderstand the meaning of this assertion: it checks only similar
+      **outputs**, not **document**.
+
+   .. note::
+
+      This method only accept ``string`` as arguments. This is an opinionated
+      implementation choice, as the purpose of this method is to check
+      the result outputs of an XML document.
+
+
+   .. rubric:: Example
+
+   ::
+
+      # ...
+
+      def test_custom_test(self):
+          """Same XML (with different spacings placements and attrs order)"""
+          # This XML string should come from the code one want to test
+          data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+          <root><tag bar="foo" foo="bar"> foo </tag></root>"""
+
+          # This is the former XML document one can expect, with pretty print
+          expected = b"""<?xml version="1.0" encoding="UTF-8" ?>
+          <root>
+              <tag foo="bar" bar="foo">foo</tag>
+          </root>"""
+
+          # This will pass
+          test_case.assertXmlEquivalentOutputs(data, expected)
+
+          # This is another example of result, with a missing attribute
+          data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+          <root>
+              <tag foo="bar"> foo </tag>
+          </root>
+          """
+
+          # This won't pass
+          test_case.assertXmlEquivalentOutputs(data, expected)

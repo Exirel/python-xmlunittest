@@ -813,46 +813,74 @@ class TestXmlTestCase(unittest.TestCase):
 
     # -------------------------------------------------------------------------
 
-    def test_assertXmlEquivalent(self):
-        """Asserts assertXmlEquivalent raises when comparison failed.
+    def test_assertXmlEquivalentOutputs(self):
+        """Asserts assertXmlEquivalentOutputs raises when comparison failed.
+
+        Basic assertion: same document, with different order of attributes,
+        text with useless spaces, etc.
+
         """
-        test_case = XmlTestCase(methodName='assertXmlEquivalent')
+        test_case = XmlTestCase(methodName='assertXmlEquivalentOutputs')
 
         # Same XML (with different spacings placements and attrs order)
-        got = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root>
             <tag foo="bar" bar="foo">foo</tag>
         </root>"""
-        got_root = test_case.assertXmlDocument(got)
         expected = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root><tag bar="foo" foo="bar"> foo </tag></root>"""
 
-        test_case.assertXmlEquivalent(got, expected)
-        test_case.assertXmlEquivalent(got_root, expected)
+        test_case.assertXmlEquivalentOutputs(data, expected)
+
+        # Not the right element given
+        wrong_element = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root>
+            <notTag foo="bar" bar="foo">foo</notTag>
+        </root>"""
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlEquivalentOutputs(wrong_element, expected)
+
+        # Too many tag elements
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root>
+            <tag foo="bar" bar="foo">foo</tag>
+            <tag foo="bar" bar="foo">foo</tag>
+        </root>"""
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlEquivalentOutputs(wrong_element, expected)
+
+    def test_assertXmlEquivalentOutputs_namespaces(self):
+        """Asserts assertXmlEquivalentOutputs raises when comparison failed.
+
+        Assertion with different namespaces: the namespace URI is the same,
+        but the prefix is different. In this case, the two XML are equivalents.
+
+        """
+        test_case = XmlTestCase(methodName='assertXmlEquivalentOutputs')
 
         # Same XML, but with different namespace prefixes
-        got = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root xmlns:foo="mynamespace">
             <foo:tag>foo</foo:tag>
         </root>"""
-        got_root = test_case.assertXmlDocument(got)
+
         expected = b"""<?xml version="1.0" encoding="UTF-8" ?>
         <root xmlns:bar="mynamespace">
             <bar:tag>foo</bar:tag>
         </root>"""
-        test_case.assertXmlEquivalent(got, expected)
-        test_case.assertXmlEquivalent(got_root, expected)
 
-        # Check comparison failure
-        got = b"""<?xml version="1.0" encoding="UTF-8" ?>
-        <root xmlns:foo="mynamespace">
-            <foo:tag> difference here </foo:tag>
-        </root>"""
-        got_root = test_case.assertXmlDocument(got)
+        test_case.assertXmlEquivalentOutputs(data, expected)
+
+        wrong_namespace = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns:foo="not_the_same_namespace">
+            <foo:tag>foo</foo:tag>
+        </root>
+        """
+
         with self.assertRaises(test_case.failureException):
-            test_case.assertXmlEquivalent(got, expected)
-        with self.assertRaises(test_case.failureException):
-            test_case.assertXmlEquivalent(got_root, expected)
+            test_case.assertXmlEquivalentOutputs(wrong_namespace, expected)
 
 
 if __name__ == "__main__":
