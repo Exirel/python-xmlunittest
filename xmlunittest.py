@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import doctest
+import io
 import unittest
 
 from lxml import etree
@@ -129,8 +130,7 @@ class XmlTestMixin(object):
                                   etree.tostring(node, pretty_print=True)))
 
     def assertXpathsUniqueValue(self, node, xpaths):
-        """Asserts each xpath's value is unique in the selected elements.
-        """
+        """Asserts each xpath's value is unique in the selected elements."""
         expressions = [etree.XPath(xpath) for xpath in xpaths]
 
         for expression in expressions:
@@ -144,8 +144,7 @@ class XmlTestMixin(object):
                              etree.tostring(node, pretty_print=True)))
 
     def assertXpathValues(self, node, xpath, values):
-        """Asserts each xpath's value is in the expected values.
-        """
+        """Asserts each xpath's value is in the expected values."""
         results = node.xpath(xpath)
 
         for result in results:
@@ -181,6 +180,26 @@ class XmlTestMixin(object):
         if not schema.validate(xml):
             message = schema.error_log.last_error
             self.fail(message)
+
+    def assertXmlValidDTD(self, node, dtd=None, filename=None):
+        """Asserts XML node is valid according to the given DTD."""
+
+        schema = None
+
+        if dtd is not None and not isinstance(dtd, etree.DTD):
+            schema = etree.DTD(io.StringIO(dtd))
+        elif isinstance(dtd, etree.DTD):
+            schema = dtd
+
+        if schema is None and filename is not None:
+            with open(filename, 'r') as fd:
+                schema = etree.DTD(fd)
+
+        if schema is None:
+            raise ValueError('No valid dtd given.')
+
+        if not schema.validate(node):
+            self.fail(schema.error_log.last_error)
 
 
 class XmlTestCase(unittest.TestCase, XmlTestMixin):

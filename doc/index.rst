@@ -412,6 +412,7 @@ XPath expression assertions
 
       # ...
 
+
 XML documents comparison assertion
 ----------------------------------
 
@@ -469,12 +470,13 @@ XML documents comparison assertion
           with self.assertRaises(self.failureException):
               self.assertXmlEquivalent(got_root, expected)
 
+
 XML schema conformance assertion
 --------------------------------
 
-This method lets you check the conformance of an XML document or node against
-a schema. Any validation schema language that is supported by `lxml
-<http://lxml.de/>`_ may be used:
+The following methods let you check the conformance of an XML document or node
+according to a schema. Any validation schema language that is supported by
+`lxml <http://lxml.de/>`_ may be used:
 
 - DTD
 - XSchema
@@ -483,6 +485,54 @@ a schema. Any validation schema language that is supported by `lxml
 
 Please read `Validation with lxml <http://lxml.de/validation.html>`_ to build
 your own schema objects in these various schema languages.
+
+
+.. py:method:: XmlTestMixin.assertXmlValidDTD(node, dtd=None, filename=None)
+
+   :param node: Node element to valid using a DTD
+   :type node: :py:class:`lxml.etree.Element`
+
+   Asserts that the given `node` element can be validated successfuly by
+   the given DTD.
+
+   The DTD can be provided as a simple string, or as a previously parsed DTD
+   using :py:class:`lxml.etree.DTD`. It can be also provided by a filename.
+
+   .. rubric:: Optional arguments
+
+   One can provide either a DTD as a string, or a DTD element from LXML, or
+   the filename of the DTD.
+
+   :param dtd: DTD used to valid the given node element.
+               Can be a string or an LXML DTD element
+   :type dtd: `string` | :py:class:`lxml.etree.DTD`
+   :param string filename: Path to the expected DTD for validation.
+
+   `dtd` and `filename` are mutualy exclusive.
+
+   .. rubric:: Example using a filename
+
+   ::
+
+      def my_custom_test(self):
+          """Check XML generated using DTD at path/to/file.dtd.
+
+          The content of the DTD file is:
+
+              <!ELEMENT root (child)>
+              <!ELEMENT child EMPTY>
+              <!ATTLIST child id ID #REQUIRED>
+
+          """
+          dtd_filename = 'path/to/file.dtd'
+          data = b"""<?xml version="1.0" encoding="utf-8"?>
+          <root>
+             <child id="child1"/>
+          </root>
+          """
+          root = test_case.assertXmlDocument(data)
+          test_case.assertXmlValidDTD(root, filename=dtd_filename)
+
 
 .. py:method:: XmlTestMixin.assertXmlValid(xml, schema)
 

@@ -7,6 +7,7 @@ import unittest
 
 from lxml import etree
 from xmlunittest import XmlTestCase
+import os
 
 
 class TestXmlTestCase(unittest.TestCase):
@@ -386,6 +387,129 @@ class TestXmlTestCase(unittest.TestCase):
         with self.assertRaises(test_case.failureException):
             test_case.assertXpathValues(root, './sub/text()', ['a', 'b'])
 
+    # -------------------------------------------------------------------------
+
+    def test_assertXmlValidDTD(self):
+        """Asserts assertXmlValidDTD raises when DTD does not valid XML."""
+        test_case = XmlTestCase(methodName='assertXmlValidDTD')
+
+        dtd = """<!ELEMENT root (child)>
+        <!ELEMENT child EMPTY>
+        <!ATTLIST child id ID #REQUIRED>
+        """
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="child1"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        # Document is valid according to DTD
+        test_case.assertXmlValidDTD(root, dtd)
+
+        data_invalid = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="child1"/>
+            <child id="child1"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data_invalid)
+
+        # Document is invalid according to DTD (multiple child element)
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlValidDTD(root, dtd)
+
+    def test_assertXmlValidDTD_filename(self):
+        """Asserts assertXmlValidDTD accepts a filename as DTD."""
+        test_case = XmlTestCase(methodName='assertXmlValidDTD')
+
+        filename = 'test_assertXmlValidDTD_filename.dtd'
+        dtd = """<!ELEMENT root (child)>
+        <!ELEMENT child EMPTY>
+        <!ATTLIST child id ID #REQUIRED>
+        """
+
+        with open(filename, 'w') as dtd_file:
+            dtd_file.write(dtd.encode('utf8'))
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="child1"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        # Document is valid according to DTD
+        try:
+            test_case.assertXmlValidDTD(root, filename=filename)
+        except:
+            os.unlink(filename)
+            raise
+
+        data_invalid = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="child1"/>
+            <child id="child1"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data_invalid)
+
+        # Document is invalid according to DTD (multiple child element)
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlValidDTD(root, filename=filename)
+
+        os.unlink(filename)
+
+    def test_assertXmlValidDTD_DTD(self):
+        """Asserts assertXmlValidDTD accepts an LXML DTD object."""
+        test_case = XmlTestCase(methodName='assertXmlValidDTD')
+
+        dtd = """<!ELEMENT root (child)>
+        <!ELEMENT child EMPTY>
+        <!ATTLIST child id ID #REQUIRED>
+        """
+        schema = etree.DTD(io.StringIO(dtd))
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="child1"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        # Document is valid according to DTD
+        test_case.assertXmlValidDTD(root, schema)
+
+        data_invalid = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="child1"/>
+            <child id="child1"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data_invalid)
+
+        # Document is invalid according to DTD (multiple child element)
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlValidDTD(root, schema)
+
+    def test_assertXmlValidDTD_no_dtd(self):
+        """Asserts assertXmlValidDTD raises ValueError without any DTD."""
+        test_case = XmlTestCase(methodName='assertXmlValidDTD')
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="child1"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        # No DTD: ValueError
+        with self.assertRaises(ValueError):
+            test_case.assertXmlValidDTD(root)
+
+    # -------------------------------------------------------------------------
+
     def test_assertXmlEquivalent(self):
         """Asserts assertXmlEquivalent raises when comparison failed.
         """
@@ -457,16 +581,6 @@ class TestXmlTestCase(unittest.TestCase):
 
         # The error message mentions the unwanted element
         self.assertIn('father', str(cm.exception))
-
-    def test_assertXmlValidDTD(self):
-        """XML validation against DTD
-        """
-        dtd = """<!ELEMENT root (child*)>
-        <!ELEMENT child (#PCDATA)>
-        <!ATTLIST child name CDATA #IMPLIED>
-        """
-        dtd = etree.DTD(io.StringIO(dtd))
-        self._test_assertXMLValid(dtd)
 
     def test_assertXmlValidXSchema(self):
         """XML validation against XSchema
