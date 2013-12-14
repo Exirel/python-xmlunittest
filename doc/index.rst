@@ -531,7 +531,7 @@ your own schema objects in these various schema languages.
           </root>
           """
           root = test_case.assertXmlDocument(data)
-          test_case.assertXmlValidDTD(root, filename=dtd_filename)
+          self.assertXmlValidDTD(root, filename=dtd_filename)
 
 
 .. py:method:: XmlTestMixin.assertXmlValid(xml, schema)
