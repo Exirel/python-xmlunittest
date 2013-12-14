@@ -25,8 +25,8 @@ Here comes XML unittest TestCase: if you want to use the built-in unittest
 package (or if it is a requirement), and you are not afraid of using xpath
 expression with lxml, this library is made for you.
 
-You will be able to test your XML document, and use the power of xpath to
-write tests that matter.
+You will be able to test your XML document, and use the power of xpath and
+various schema languages to write tests that matter.
 
 
 Links
@@ -48,10 +48,10 @@ How to
 Example::
 
     from xmlunittest import XmlTestCase
-    
-    
+
+
     class CustomTestCase(XmlTestCase):
-    
+
         def test_my_custom_test(self):
             # In a real case, data come from a call to your function/method.
             data = """<?xml version="1.0" encoding="UTF-8" ?>
@@ -60,10 +60,10 @@ Example::
                 <leaf id="2" active="on" />
                 <leaf id="3" active="off" />
             </root>"""
-    
+
             # Everything starts with `assertXmlDocument`
             root = self.assertXmlDocument(data)
-    
+
             # Check namespace
             self.assertXmlNamespace(root, 'ns', 'uri')
             # Check
@@ -169,7 +169,7 @@ Element assertions
 
    Asserts `node` has the given `attribute`.
 
-   Argument `attribute` must be the attribute's name, with namespace's prefix 
+   Argument `attribute` must be the attribute's name, with namespace's prefix
    (notation 'ns:att' and not '{uri}att').
 
    .. rubric:: Optional named arguments
@@ -355,3 +355,184 @@ XPath expression assertions
          self.assertXpathValues(root, './sub/text()', ('a', 'b', 'c'))
 
       # ...
+
+XML documents comparison assertion
+----------------------------------
+
+.. py:method:: XmlTestCase.assertXmlEquivalent(got, expect)
+
+   :param got: XML as text or Element node
+   :param expect: XML as text
+
+   Asserts both XML are equivalent. The comparison ignores spaces within nodes
+   and namespaces - if any - may be associated to diffrerent prefixes.
+
+   If a difference is found, a :class:`AssertionError` is raised. You can have
+   the detailed mismatch in ``str(exc)``, ``exc`` being the raised exception.
+
+   .. rubric:: Example
+
+   ::
+
+      # ...
+
+      def test_custom_test(self):
+          # Same XML (with different spacings placements and attrs order)
+          got = b"""<?xml version="1.0" encoding="UTF-8" ?>
+          <root>
+              <tag foo="bar" bar="foo">foo</tag>
+          </root>"""
+          got_root = self.assertXmlDocument(got)
+          expected = b"""<?xml version="1.0" encoding="UTF-8" ?>
+          <root><tag bar="foo" foo="bar"> foo </tag></root>"""
+
+          self.assertXmlEquivalent(got, expected)
+          self.assertXmlEquivalent(got_root, expected)
+
+          # Same XML, but with different namespace prefixes
+          got = b"""<?xml version="1.0" encoding="UTF-8" ?>
+          <root xmlns:foo="mynamespace">
+              <foo:tag>foo</foo:tag>
+          </root>"""
+          got_root = self.assertXmlDocument(got)
+          expected = b"""<?xml version="1.0" encoding="UTF-8" ?>
+          <root xmlns:bar="mynamespace">
+              <bar:tag>foo</bar:tag>
+          </root>"""
+          self.assertXmlEquivalent(got, expected)
+          self.assertXmlEquivalent(got_root, expected)
+
+          # Check comparison failure
+          got = b"""<?xml version="1.0" encoding="UTF-8" ?>
+          <root xmlns:foo="mynamespace">
+              <foo:tag> difference here </foo:tag>
+          </root>"""
+          got_root = self.assertXmlDocument(got)
+          with self.assertRaises(self.failureException):
+              self.assertXmlEquivalent(got, expected)
+          with self.assertRaises(self.failureException):
+              self.assertXmlEquivalent(got_root, expected)
+
+XML schema conformance assertion
+--------------------------------
+
+This method lets you check the conformance of an XML document or node against
+a schema. Any validation schema language that is supported by `lxml
+<http://lxml.de/>`_ may be used:
+
+- DTD
+- XSchema
+- RelaxNG
+- Schematron
+
+Please read `Validation with lxml <http://lxml.de/validation.html>`_ to build
+your own schema objects in these various schema languages.
+
+.. py:method:: XmlTestCase.assertXmlValid(xml, schema)
+
+   :param xml: XML to validate as text or Element node
+   :param schema: Any schema object provided by lxml
+
+   Asserts the XML document or Element node complies with the structure and
+   data constraints from the schema.
+
+   If this method raises an :class:`AssertionError` exception, ``str(exc)``
+   provides details about validation issues, ``exc`` being the exception
+   object.
+
+   .. rubric:: Example
+
+   ::
+
+      import io
+      from lxml import etree
+
+      # ...
+
+      # Our old style DTD
+      dtd = """<!ELEMENT root (child*)>
+      <!ELEMENT child (#PCDATA)>
+      <!ATTLIST child name CDATA #IMPLIED>
+      """
+      dtd = etree.DTD(io.StringIO(dtd))  # -> DTD objet
+
+      # Same in XSchema (noisy)
+      xschema = """<?xml version="1.0"?>
+      <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="child" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:simpleContent>
+                    <xsd:extension base="xsd:string">
+                      <xsd:attribute name="name" type="xsd:string" use="optional" />
+                    </xsd:extension>
+                  </xsd:simpleContent>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:schema>
+      """
+      xschema = etree.XMLSchema(etree.XML(xschema))  # -> XMLSchema object
+
+      # Same in RelaxNG
+      relaxng = """<rng:element name="root" xmlns:rng="http://relaxng.org/ns/structure/1.0">
+        <rng:zeroOrMore>
+          <rng:element name="child">
+            <rng:optional>
+              <rng:attribute name="name">
+                <rng:text />
+              </rng:attribute>
+            </rng:optional>
+            <rng:text />
+          </rng:element>
+        </rng:zeroOrMore>
+      </rng:element>
+      """
+      relaxng = etree.RelaxNG(etree.XML(relaxng))  # -> RelaxNG object
+
+      # ...
+
+      valid_xml = b"""<?xml version="1.0" encoding="UTF-8" ?>
+      <root>
+        <child name="hello">blah blah</child>
+        <child>hello</child>
+      </root>
+      """
+      valid_xml = etree.XML(valid_xml)
+
+      invalid_xml = b"""<?xml version="1.0" encoding="UTF-8" ?>
+      <root>
+        <child name="hello">blah blah</child>
+        <father>hello</father>
+      </root>
+      """
+      invalid_xml = etree.XML(invalid_xml)
+
+      class MyValidationTests(XmlTestCase):
+
+          # ...
+
+          def _test_validate(self, schema):
+              """Common test method
+              """
+              # Valid is valid
+              self.assertXmlValid(valid_xml, schema)
+
+              # As well as invalid is invalid
+              with self.assertRaises(self.failureException) as cm:
+                  self.assertXmlValid(invalid_xml, schema)
+
+              # And we have a trace of the unknown element in the error message
+              self.assertIn('father', str(cm.exception))
+
+
+          def test_validate_all(self):
+              """Checking our XML (in) valid stuffs with various schemas
+              """
+              self._test_validate(dtd)
+              self._test_validate(xschema)
+              self._test_validate(relaxng)
