@@ -169,21 +169,8 @@ class XmlTestMixin(object):
             message = checker.output_difference(doctest.Example("", expect), got, PARSE_XML)
             self.fail(message)
 
-    def assertXmlValid(self, xml, schema):
-        """Validates xml (string or lxml _Element) against a schema.
-
-        :param xml: XML string or lxml Element to validate
-        :param schema: a DTD, XSchema, RelaxNG or Schematron instance
-        """
-        if not isinstance(xml, etree._Element):
-            xml = etree.XML(xml)
-        if not schema.validate(xml):
-            message = schema.error_log.last_error
-            self.fail(message)
-
     def assertXmlValidDTD(self, node, dtd=None, filename=None):
         """Asserts XML node is valid according to the given DTD."""
-
         schema = None
 
         if dtd is not None and not isinstance(dtd, etree.DTD):
@@ -196,7 +183,45 @@ class XmlTestMixin(object):
                 schema = etree.DTD(fd)
 
         if schema is None:
-            raise ValueError('No valid dtd given.')
+            raise ValueError('No valid DTD given.')
+
+        if not schema.validate(node):
+            self.fail(schema.error_log.last_error)
+
+    def assertXmlValidXSchema(self, node, xschema=None, filename=None):
+        """Asserts XML node is valid according to the given XML Schema."""
+        schema = None
+
+        if xschema is not None and not isinstance(xschema, etree.XMLSchema):
+            schema = etree.XMLSchema(etree.XML(xschema))
+        elif isinstance(xschema, etree.XMLSchema):
+            schema = xschema
+
+        if xschema is None and filename is not None:
+            with open(filename, 'r') as xschema_file:
+                schema = etree.XMLSchema(etree.XML(xschema_file.read()))
+
+        if schema is None:
+            raise ValueError('No valid XMLSchema given.')
+
+        if not schema.validate(node):
+            self.fail(schema.error_log.last_error)
+
+    def assertXmlValidRelaxNG(self, node, relaxng=None, filename=None):
+        """Asserts XML node is valid according to the given RelaxNG."""
+        schema = None
+
+        if relaxng is not None and not isinstance(relaxng, etree.RelaxNG):
+            schema = etree.RelaxNG(etree.XML(relaxng))
+        elif isinstance(relaxng, etree.RelaxNG):
+            schema = relaxng
+
+        if relaxng is None and filename is not None:
+            with open(filename, 'r') as relaxng_file:
+                schema = etree.RelaxNG(etree.XML(relaxng_file.read()))
+
+        if schema is None:
+            raise ValueError('No valid RelaxNG given.')
 
         if not schema.validate(node):
             self.fail(schema.error_log.last_error)

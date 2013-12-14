@@ -455,11 +455,12 @@ class TestXmlTestCase(unittest.TestCase):
         """
         root = test_case.assertXmlDocument(data_invalid)
 
-        # Document is invalid according to DTD (multiple child element)
-        with self.assertRaises(test_case.failureException):
-            test_case.assertXmlValidDTD(root, filename=filename)
-
-        os.unlink(filename)
+        try:
+            # Document is invalid according to DTD (multiple child element)
+            with self.assertRaises(test_case.failureException):
+                test_case.assertXmlValidDTD(root, filename=filename)
+        finally:
+            os.unlink(filename)
 
     def test_assertXmlValidDTD_DTD(self):
         """Asserts assertXmlValidDTD accepts an LXML DTD object."""
@@ -510,6 +511,308 @@ class TestXmlTestCase(unittest.TestCase):
 
     # -------------------------------------------------------------------------
 
+    def test_assertXmlValidXSchema(self):
+        """Asserts assertXmlValidXSchema raises when schema does not valid XML.
+        """
+        test_case = XmlTestCase(methodName='assertXmlValidXSchema')
+
+        xschema = b"""<?xml version="1.0" encoding="utf-8"?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            <xsd:element name="root">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="child" minOccurs="1" maxOccurs="1">
+                            <xsd:complexType>
+                                <xsd:simpleContent>
+                                    <xsd:extension base="xsd:string">
+                                        <xsd:attribute name="id" type="xsd:string" use="required" />
+                                    </xsd:extension>
+                                </xsd:simpleContent>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:schema>
+        """
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        test_case.assertXmlValidXSchema(root, xschema)
+
+        data_invalid = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+            <child id="tooManyChild"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data_invalid)
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlValidXSchema(root, xschema)
+
+    def test_assertXmlValidXSchema_filename(self):
+        """Asserts assertXmlValidXSchema raises when schema does not valid XML.
+        """
+        test_case = XmlTestCase(methodName='assertXmlValidXSchema')
+
+        xschema = b"""<?xml version="1.0" encoding="utf-8"?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            <xsd:element name="root">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="child" minOccurs="1" maxOccurs="1">
+                            <xsd:complexType>
+                                <xsd:simpleContent>
+                                    <xsd:extension base="xsd:string">
+                                        <xsd:attribute name="id" type="xsd:string" use="required" />
+                                    </xsd:extension>
+                                </xsd:simpleContent>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:schema>
+        """
+
+        filename = 'test_assertXmlValidXSchema_filename.xml'
+        with open(filename, 'w') as xchema_file:
+            xchema_file.write(xschema.encode('utf8'))
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        try:
+            test_case.assertXmlValidXSchema(root, filename=filename)
+        except:
+            os.unlink(filename)
+            raise
+
+        data_invalid = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+            <child id="tooManyChild"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data_invalid)
+
+        try:
+            with self.assertRaises(test_case.failureException):
+                test_case.assertXmlValidXSchema(root, filename=filename)
+        finally:
+            os.unlink(filename)
+
+    def test_assertXmlValidXSchema_xschema(self):
+        """Asserts assertXmlValidXSchema raises when schema does not valid XML.
+        """
+        test_case = XmlTestCase(methodName='assertXmlValidXSchema')
+
+        xschema = b"""<?xml version="1.0" encoding="utf-8"?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            <xsd:element name="root">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="child" minOccurs="1" maxOccurs="1">
+                            <xsd:complexType>
+                                <xsd:simpleContent>
+                                    <xsd:extension base="xsd:string">
+                                        <xsd:attribute name="id" type="xsd:string" use="required" />
+                                    </xsd:extension>
+                                </xsd:simpleContent>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:schema>
+        """
+
+        xml_schema = etree.XMLSchema(etree.XML(xschema))
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        test_case.assertXmlValidXSchema(root, xml_schema)
+
+        data_invalid = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+            <child id="tooManyChild"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data_invalid)
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlValidXSchema(root, xml_schema)
+
+    def test_assertXmlValidXSchema_no_xchema(self):
+        """Asserts assertXmlValidXSchema raises ValueError without any schema.
+        """
+        test_case = XmlTestCase(methodName='assertXmlValidXSchema')
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="child1"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        # No DTD: ValueError
+        with self.assertRaises(ValueError):
+            test_case.assertXmlValidXSchema(root)
+
+    # -------------------------------------------------------------------------
+
+    def test_assertXmlValidRelaxNG(self):
+        """Asserts assertXmlValidRelaxNG raises when schema does not valid XML.
+        """
+        test_case = XmlTestCase(methodName='assertXmlValidRelaxNG')
+
+        relaxng = b"""<?xml version="1.0" encoding="utf-8"?>
+        <rng:element name="root" xmlns:rng="http://relaxng.org/ns/structure/1.0">
+            <rng:element name="child">
+                <rng:attribute name="id">
+                    <rng:text />
+                </rng:attribute>
+            </rng:element>
+        </rng:element>
+        """
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        test_case.assertXmlValidRelaxNG(root, relaxng)
+
+        data_invalid = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+            <child id="tooManyChild"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data_invalid)
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlValidRelaxNG(root, relaxng)
+
+    def test_assertXmlValidRelaxNG_filename(self):
+        """Asserts assertXmlValidRelaxNG raises when schema does not valid XML.
+        """
+        test_case = XmlTestCase(methodName='assertXmlValidRelaxNG')
+
+        relaxng = """<?xml version="1.0" encoding="utf-8"?>
+        <rng:element name="root" xmlns:rng="http://relaxng.org/ns/structure/1.0">
+            <rng:element name="child">
+                <rng:attribute name="id">
+                    <rng:text />
+                </rng:attribute>
+            </rng:element>
+        </rng:element>
+        """
+
+        filename = 'test_assertXmlValidRelaxNG_filename.xml'
+        with open(filename, 'w') as relaxng_file:
+            relaxng_file.write(relaxng.encode('utf8'))
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        try:
+            test_case.assertXmlValidRelaxNG(root, filename=filename)
+        except:
+            os.unlink(filename)
+            raise
+
+        data_invalid = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+            <child id="tooManyChild"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data_invalid)
+
+        try:
+            with self.assertRaises(test_case.failureException):
+                test_case.assertXmlValidRelaxNG(root, filename=filename)
+        finally:
+            os.unlink(filename)
+
+    def test_assertXmlValidRelaxNG_relaxng(self):
+        """Asserts assertXmlValidRelaxNG raises when schema does not valid XML.
+        """
+        test_case = XmlTestCase(methodName='assertXmlValidRelaxNG')
+
+        relaxng = b"""<?xml version="1.0" encoding="utf-8"?>
+        <rng:element name="root" xmlns:rng="http://relaxng.org/ns/structure/1.0">
+            <rng:element name="child">
+                <rng:attribute name="id">
+                    <rng:text />
+                </rng:attribute>
+            </rng:element>
+        </rng:element>
+        """
+
+        xml_relaxng = etree.RelaxNG(etree.XML(relaxng))
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        test_case.assertXmlValidRelaxNG(root, xml_relaxng)
+
+        data_invalid = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="valid"/>
+            <child id="tooManyChild"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data_invalid)
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXmlValidRelaxNG(root, xml_relaxng)
+
+    def test_assertXmlValidRelaxNG_no_relaxng(self):
+        """Asserts assertXmlValidRelaxNG raises ValueError without any RelaxNG.
+        """
+        test_case = XmlTestCase(methodName='assertXmlValidRelaxNG')
+
+        data = b"""<?xml version="1.0" encoding="utf-8"?>
+        <root>
+            <child id="child1"/>
+        </root>
+        """
+        root = test_case.assertXmlDocument(data)
+
+        # No DTD: ValueError
+        with self.assertRaises(ValueError):
+            test_case.assertXmlValidRelaxNG(root)
+
+    # -------------------------------------------------------------------------
+
     def test_assertXmlEquivalent(self):
         """Asserts assertXmlEquivalent raises when comparison failed.
         """
@@ -551,82 +854,6 @@ class TestXmlTestCase(unittest.TestCase):
         with self.assertRaises(test_case.failureException):
             test_case.assertXmlEquivalent(got_root, expected)
 
-    # Resources for assertXmlValid
-
-    _valid_xml = b"""<?xml version="1.0" encoding="UTF-8" ?>
-    <root>
-      <child name="hello">blah blah</child>
-      <child>hello</child>
-    </root>
-    """
-    _valid_xml = etree.XML(_valid_xml)
-
-    _invalid_xml = b"""<?xml version="1.0" encoding="UTF-8" ?>
-    <root>
-      <child name="hello">blah blah</child>
-      <father>hello</father>
-    </root>
-    """
-    _invalid_xml = etree.XML(_invalid_xml)
-
-    def _test_assertXMLValid(self, schema):
-        test_case = XmlTestCase(methodName='assertXmlValid')
-
-        # Using a valid doc
-        test_case.assertXmlValid(self._valid_xml, schema)
-
-        # Using an invalid doc
-        with self.assertRaises(self.failureException) as cm:
-            test_case.assertXmlValid(self._invalid_xml, schema)
-
-        # The error message mentions the unwanted element
-        self.assertIn('father', str(cm.exception))
-
-    def test_assertXmlValidXSchema(self):
-        """XML validation against XSchema
-        """
-        xschema = """<?xml version="1.0"?>
-        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-          <xsd:element name="root">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="child" minOccurs="0" maxOccurs="unbounded">
-                  <xsd:complexType>
-                    <xsd:simpleContent>
-                      <xsd:extension base="xsd:string">
-                        <xsd:attribute name="name" type="xsd:string" use="optional" />
-                      </xsd:extension>
-                    </xsd:simpleContent>
-                  </xsd:complexType>
-                </xsd:element>
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:schema>
-        """
-        xschema = etree.XML(xschema)
-        xschema = etree.XMLSchema(xschema)
-        self._test_assertXMLValid(xschema)
-
-    def test_assertXmlValidRelaxNg(self):
-        """XML validation against RelaxNG
-        """
-        relaxng = """<rng:element name="root" xmlns:rng="http://relaxng.org/ns/structure/1.0">
-          <rng:zeroOrMore>
-            <rng:element name="child">
-              <rng:optional>
-                <rng:attribute name="name">
-                  <rng:text />
-                </rng:attribute>
-              </rng:optional>
-              <rng:text />
-            </rng:element>
-          </rng:zeroOrMore>
-        </rng:element>
-        """
-        relaxng = etree.XML(relaxng)
-        relaxng = etree.RelaxNG(relaxng)
-        self._test_assertXMLValid(relaxng)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test_assertXmlDocument']

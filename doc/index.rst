@@ -534,111 +534,117 @@ your own schema objects in these various schema languages.
           self.assertXmlValidDTD(root, filename=dtd_filename)
 
 
-.. py:method:: XmlTestMixin.assertXmlValid(xml, schema)
+.. py:method:: XmlTestMixin.assertXmlValidXSchema(node, xschema=None, filename=None)
 
-   :param xml: XML to validate as text or Element node
-   :param schema: Any schema object provided by lxml
+   :param node: Node element to valid using an XML Schema
+   :type node: :py:class:`lxml.etree.Element`
 
-   Asserts the XML document or Element node complies with the structure and
-   data constraints from the schema.
+   Asserts that the given `node` element can be validated successfuly by
+   the given XML Schema.
 
-   If this method raises an :class:`AssertionError` exception, ``str(exc)``
-   provides details about validation issues, ``exc`` being the exception
-   object.
+   The XML Schema can be provided as a simple string, or as a previously parsed
+   XSchema using :py:class:`lxml.etree.XMLSChema`. It can be also provided by a
+   filename.
 
-   .. rubric:: Example
+   .. rubric:: Optional arguments
+
+   One can provide either an XMLSchema as a string, or an XMLSchema element
+   from LXML, or the filename of the XMLSchema.
+
+   :param xschema: XMLSchema used to valid the given node element.
+                   Can be a string or an LXML XMLSchema element
+   :type xschema: `string` | :py:class:`lxml.etree.XMLSchema`
+   :param string filename: Path to the expected XMLSchema for validation.
+
+   `xschema` and `filename` are mutualy exclusive.
+
+   .. rubric:: Example using a filename
 
    ::
 
-      import io
-      from lxml import etree
+      def my_custom_test(self):
+          """Check XML generated using XMLSchema at path/to/xschema.xml.
 
-      # ...
+          The content of the XMLSchema file is:
 
-      # Our old style DTD
-      dtd = """<!ELEMENT root (child*)>
-      <!ELEMENT child (#PCDATA)>
-      <!ATTLIST child name CDATA #IMPLIED>
-      """
-      dtd = etree.DTD(io.StringIO(dtd))  # -> DTD objet
+            <?xml version="1.0" encoding="utf-8"?>
+            <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+               <xsd:element name="root">
+                   <xsd:complexType>
+                       <xsd:sequence>
+                           <xsd:element name="child" minOccurs="1" maxOccurs="1">
+                               <xsd:complexType>
+                                   <xsd:simpleContent>
+                                       <xsd:extension base="xsd:string">
+                                           <xsd:attribute name="id" type="xsd:string" use="required" />
+                                       </xsd:extension>
+                                   </xsd:simpleContent>
+                               </xsd:complexType>
+                           </xsd:element>
+                       </xsd:sequence>
+                   </xsd:complexType>
+               </xsd:element>
+            </xsd:schema>
 
-      # Same in XSchema (noisy)
-      xschema = """<?xml version="1.0"?>
-      <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-        <xsd:element name="root">
-          <xsd:complexType>
-            <xsd:sequence>
-              <xsd:element name="child" minOccurs="0" maxOccurs="unbounded">
-                <xsd:complexType>
-                  <xsd:simpleContent>
-                    <xsd:extension base="xsd:string">
-                      <xsd:attribute name="name" type="xsd:string" use="optional" />
-                    </xsd:extension>
-                  </xsd:simpleContent>
-                </xsd:complexType>
-              </xsd:element>
-            </xsd:sequence>
-          </xsd:complexType>
-        </xsd:element>
-      </xsd:schema>
-      """
-      xschema = etree.XMLSchema(etree.XML(xschema))  # -> XMLSchema object
-
-      # Same in RelaxNG
-      relaxng = """<rng:element name="root" xmlns:rng="http://relaxng.org/ns/structure/1.0">
-        <rng:zeroOrMore>
-          <rng:element name="child">
-            <rng:optional>
-              <rng:attribute name="name">
-                <rng:text />
-              </rng:attribute>
-            </rng:optional>
-            <rng:text />
-          </rng:element>
-        </rng:zeroOrMore>
-      </rng:element>
-      """
-      relaxng = etree.RelaxNG(etree.XML(relaxng))  # -> RelaxNG object
-
-      # ...
-
-      valid_xml = b"""<?xml version="1.0" encoding="UTF-8" ?>
-      <root>
-        <child name="hello">blah blah</child>
-        <child>hello</child>
-      </root>
-      """
-      valid_xml = etree.XML(valid_xml)
-
-      invalid_xml = b"""<?xml version="1.0" encoding="UTF-8" ?>
-      <root>
-        <child name="hello">blah blah</child>
-        <father>hello</father>
-      </root>
-      """
-      invalid_xml = etree.XML(invalid_xml)
-
-      class MyValidationTests(XmlTestCase):
-
-          # ...
-
-          def _test_validate(self, schema):
-              """Common test method
-              """
-              # Valid is valid
-              self.assertXmlValid(valid_xml, schema)
-
-              # As well as invalid is invalid
-              with self.assertRaises(self.failureException) as cm:
-                  self.assertXmlValid(invalid_xml, schema)
-
-              # And we have a trace of the unknown element in the error message
-              self.assertIn('father', str(cm.exception))
+          """
+          xschema_filename = 'path/to/xschema.xml'
+          data = b"""<?xml version="1.0" encoding="utf-8"?>
+          <root>
+             <child id="child1"/>
+          </root>
+          """
+          root = test_case.assertXmlDocument(data)
+          self.assertXmlValidXSchema(root, filename=xschema_filename)
 
 
-          def test_validate_all(self):
-              """Checking our XML (in) valid stuffs with various schemas
-              """
-              self._test_validate(dtd)
-              self._test_validate(xschema)
-              self._test_validate(relaxng)
+.. py:method:: XmlTestMixin.assertXmlValidRelaxNG(node, relaxng=None, filename=None)
+
+   :param node: Node element to valid using a RelaxNG
+   :type node: :py:class:`lxml.etree.Element`
+
+   Asserts that the given `node` element can be validated successfuly by
+   the given RelaxNG.
+
+   The RelaxNG can be provided as a simple string, or as a previously parsed
+   RelaxNG using :py:class:`lxml.etree.RelaxNG`. It can be also provided by a
+   filename.
+
+   .. rubric:: Optional arguments
+
+   One can provide either a RelaxNG as a string, or a RelaxNG element
+   from LXML, or the filename of the RelaxNG.
+
+   :param relaxng: RelaxNG used to valid the given node element.
+                   Can be a string or an LXML RelaxNG element
+   :type relaxng: `string` | :py:class:`lxml.etree.RelaxNG`
+   :param string filename: Path to the expected RelaxNG for validation.
+
+   `relaxng` and `filename` are mutualy exclusive.
+
+   .. rubric:: Example using a filename
+
+   ::
+
+      def my_custom_test(self):
+          """Check XML generated using RelaxNG at path/to/relaxng.xml.
+
+          The content of the RelaxNG file is:
+
+              <?xml version="1.0" encoding="utf-8"?>
+              <rng:element name="root" xmlns:rng="http://relaxng.org/ns/structure/1.0">
+                  <rng:element name="child">
+                      <rng:attribute name="id">
+                          <rng:text />
+                      </rng:attribute>
+                  </rng:element>
+              </rng:element>
+
+          """
+          relaxng_filename = 'path/to/relaxng.xml'
+          data = b"""<?xml version="1.0" encoding="utf-8"?>
+          <root>
+             <child id="child1"/>
+          </root>
+          """
+          root = test_case.assertXmlDocument(data)
+          self.assertXmlValidRelaxNG(root, filename=relaxng_filename)
