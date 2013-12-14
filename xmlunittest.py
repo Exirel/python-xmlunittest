@@ -9,13 +9,11 @@ from lxml.etree import XMLSyntaxError
 from lxml.doctestcompare import LXMLOutputChecker, PARSE_XML
 
 
-class XmlTestCase(unittest.TestCase):
-    """XML test case for unit test using python unittest built-in package.
+class XmlTestMixin(object):
+    """Base mixin class for XML unittest.
 
-    One can extends this class for his test case and use helpful assertion
-    method.
-
-    XML parsing uses python lxml.etree.
+    One may want to extends unittest.TestCase itself, and then uses this
+    mixin class to add specific XML assertions.
 
     """
     default_partial_tag = 'partialTest'
@@ -183,3 +181,15 @@ class XmlTestCase(unittest.TestCase):
         if not schema.validate(xml):
             message = schema.error_log.last_error
             self.fail(message)
+
+
+class XmlTestCase(unittest.TestCase, XmlTestMixin):
+    """XML test case for unit test using python unittest built-in package.
+
+    One can extends this class for his test case and use helpful assertion
+    method.
+
+    XML parsing uses python lxml.etree.
+
+    """
+    pass

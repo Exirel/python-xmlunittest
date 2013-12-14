@@ -47,28 +47,59 @@ How to
 
 Example::
 
-    from xmlunittest import XmlTestCase
+   from xmlunittest import XmlTestCase
 
 
-    class CustomTestCase(XmlTestCase):
+   class CustomTestCase(XmlTestCase):
 
-        def test_my_custom_test(self):
-            # In a real case, data come from a call to your function/method.
-            data = """<?xml version="1.0" encoding="UTF-8" ?>
-            <root xmlns:ns="uri">
-                <leaf id="1" active="on" />
-                <leaf id="2" active="on" />
-                <leaf id="3" active="off" />
-            </root>"""
+       def test_my_custom_test(self):
+           # In a real case, data come from a call to your function/method.
+           data = """<?xml version="1.0" encoding="UTF-8" ?>
+           <root xmlns:ns="uri">
+               <leaf id="1" active="on" />
+               <leaf id="2" active="on" />
+               <leaf id="3" active="off" />
+           </root>"""
 
-            # Everything starts with `assertXmlDocument`
-            root = self.assertXmlDocument(data)
+           # Everything starts with `assertXmlDocument`
+           root = self.assertXmlDocument(data)
 
-            # Check namespace
-            self.assertXmlNamespace(root, 'ns', 'uri')
-            # Check
-            self.assertXpathsUniqueValue(root, ('./leaf@id', ))
-            self.assertXpathValues(root, './leaf@active', ('on', 'off'))
+           # Check namespace
+           self.assertXmlNamespace(root, 'ns', 'uri')
+
+           # Check
+           self.assertXpathsUniqueValue(root, ('./leaf@id', ))
+           self.assertXpathValues(root, './leaf@active', ('on', 'off'))
+
+
+Alternativly, one can use the :py:class:`XmlTestMixin` instead of the
+:py:class:`XmlTestCase`, as long as its own class also extends
+:py:class:`unittest.TestCase`.
+
+This is convenient when there is already a subclass of
+:py:class:`unittest.TestCase` and one whant to also profit of XML assertions.
+
+
+Example::
+
+   import unittest
+
+   from xmlunittest import XmlTestMixin
+
+
+   class CustomTestCase(unittest.TestCase, XmlTestMixin):
+
+       def test_my_custom_test(self):
+           # write exactly the same test as in previous example
+
+           data = """<?xml version="1.0" encoding="UTF-8" ?>
+           <root xmlns:ns="uri">
+               <leaf id="1" active="on" />
+               <leaf id="2" active="on" />
+               <leaf id="3" active="off" />
+           </root>"""
+
+           self.assertXmlDocument(data)
 
 
 Assertion methods
@@ -76,16 +107,41 @@ Assertion methods
 
 .. py:class:: XmlTestCase
 
-   Base class one must extends to use XML assertion methods. As this class
+   Base class one can extends to use XML assertion methods. As this class
    only provide `assert*` methods, there is nothing more to do.
 
    Simple as it always should be.
+
+   This class extends :py:class:`unittest.TestCase` and
+   :py:class:`XmlTestMixin`. If you want a description of assertion methods,
+   you should read next the description of base class :py:class:`XmlTestMixin`.
+
+
+.. py:class:: XmlTestMixin
+
+   Base class that only provide assertion methods. To use, one must extends
+   both :py:class:`unittest.TestCase` and :py:class:`XmlTestMixin`. Of course,
+   it can use any subclass of :py:class:`unittest.TestCase`, in combination
+   with :py:class:`XmlTestMixin` without effort.
+
+   For example::
+
+      class TestUsingMixin(unittest.TestCase, xmlunittest.XmlTestMixin):
+
+          def test_my_test(self):
+              data = my_module.generate_xml()
+
+              # unittest.TestCase assert
+              self.assertIsNotNone(data)
+
+              # xmlunittest.XmlTestMixin assert
+              self.assertXmlDocument(data)
 
 
 Document assertions
 -------------------
 
-.. py:method:: XmlTestCase.assertXmlDocument(data)
+.. py:method:: XmlTestMixin.assertXmlDocument(data)
 
    :param string data: XML formated string
    :rtype: lxml.etree._Element
@@ -95,7 +151,7 @@ Document assertions
    the test fails.
 
 
-.. py:method:: assertXmlPartial(partial_data, root_tag=None)
+.. py:method:: XmlTestMixin.assertXmlPartial(partial_data, root_tag=None)
 
    :param string partial_data: Partial document as XML formated string
    :rtype: lxml.etree._Element
@@ -137,7 +193,7 @@ Document assertions
 Element assertions
 ------------------
 
-.. py:method:: XmlTestCase.assertXmlNamespace(node, prefix, uri)
+.. py:method:: XmlTestMixin.assertXmlNamespace(node, prefix, uri)
 
    :param node: Element node
    :param string prefix: Expected namespace's prefix
@@ -161,7 +217,7 @@ Element assertions
 
       # ...
 
-.. py:method:: XmlTestCase.assertXmlHasAttribute(node, attribute, **kwargs)
+.. py:method:: XmlTestMixin.assertXmlHasAttribute(node, attribute, **kwargs)
 
    :param node: Element node
    :param string attribute: Expected attribute's name (using `prefix:name`
@@ -197,7 +253,7 @@ Element assertions
       # ...
 
 
-.. py:method:: XmlTestCase.assertXmlNode(node, **kwargs)
+.. py:method:: XmlTestMixin.assertXmlNode(node, **kwargs)
 
    Asserts `node` is an element node, and can assert expected tag and value.
 
@@ -231,7 +287,7 @@ Element assertions
 XPath expression assertions
 ---------------------------
 
-.. py:method:: XmlTestCase.assertXpathsExist(node, xpaths)
+.. py:method:: XmlTestMixin.assertXpathsExist(node, xpaths)
 
    :param node: Element node
    :param tuple xpaths: List of XPath expressions
@@ -259,7 +315,7 @@ XPath expression assertions
       # ...
 
 
-.. py:method:: XmlTestCase.assertXpathsOnlyOne(node, xpaths)
+.. py:method:: XmlTestMixin.assertXpathsOnlyOne(node, xpaths)
 
    :param node: Element node
    :param tuple xpaths: List of XPath expressions
@@ -286,7 +342,7 @@ XPath expression assertions
 
       # ...
 
-.. py:method:: XmlTestCase.assertXpathsUniqueValue(node, xpaths)
+.. py:method:: XmlTestMixin.assertXpathsUniqueValue(node, xpaths)
 
    :param node: Element node
    :param tuple xpaths: List of XPath expressions
@@ -323,7 +379,7 @@ XPath expression assertions
       # ...
 
 
-.. py:method:: XmlTestCase.assertXpathValues(node, xpath, values)
+.. py:method:: XmlTestMixin.assertXpathValues(node, xpath, values)
 
    :param node: Element node
    :param string xpath: XPath expression to select elements
@@ -359,7 +415,7 @@ XPath expression assertions
 XML documents comparison assertion
 ----------------------------------
 
-.. py:method:: XmlTestCase.assertXmlEquivalent(got, expect)
+.. py:method:: XmlTestMixin.assertXmlEquivalent(got, expect)
 
    :param got: XML as text or Element node
    :param expect: XML as text
@@ -428,7 +484,7 @@ a schema. Any validation schema language that is supported by `lxml
 Please read `Validation with lxml <http://lxml.de/validation.html>`_ to build
 your own schema objects in these various schema languages.
 
-.. py:method:: XmlTestCase.assertXmlValid(xml, schema)
+.. py:method:: XmlTestMixin.assertXmlValid(xml, schema)
 
    :param xml: XML to validate as text or Element node
    :param schema: Any schema object provided by lxml
