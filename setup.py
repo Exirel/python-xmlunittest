@@ -11,7 +11,7 @@ Python library for unit-testing of XML document using lxml.
 from distutils.core import setup
 
 
-with open('README.txt') as fd:
+with open('README.txt', encoding='utf-8') as fd:
     long_description = fd.read()
 
 
