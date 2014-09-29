@@ -3,11 +3,11 @@
 from __future__ import unicode_literals
 
 import io
+import os
 import unittest
 
 from lxml import etree
 from xmlunittest import XmlTestCase
-import os
 
 
 class TestXmlTestCase(unittest.TestCase):
