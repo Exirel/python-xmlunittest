@@ -884,5 +884,4 @@ class TestXmlTestCase(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.test_assertXmlDocument']
     unittest.main()
