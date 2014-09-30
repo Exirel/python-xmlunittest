@@ -8,12 +8,15 @@ Python library for unit-testing of XML document using lxml.
 - Source: https://github.com/Exirel/python-xmlunittest
 
 """
-from distutils.core import setup
+
+import codecs
+import os
+
+from setuptools import setup
 
 
-with open('README.txt', encoding='utf-8') as fd:
-    long_description = fd.read()
-
+def read(*parts):
+    return codecs.open(os.path.join(os.path.dirname(__file__), *parts), encoding='utf-8').read()
 
 classifiers = [
     'Development Status :: 4 - Beta',
@@ -29,10 +32,11 @@ classifiers = [
 setup(name='xmlunittest',
       version='0.2.0',
       description='Library using lxml and unittest for unit testing XML.',
-      long_description=long_description,
+      long_description=read('README.rst'),
       author='Florian Strzelecki',
       author_email='florian.strzelecki@gmail.com',
       license='MIT',
       url='http://python-xmlunittest.readthedocs.org/en/latest/',
       py_modules=['xmlunittest'],
+      install_requires=['lxml>=3.3.6'],
       classifiers=classifiers)
