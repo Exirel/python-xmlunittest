@@ -18,6 +18,7 @@ from setuptools import setup
 def read(*parts):
     return codecs.open(os.path.join(os.path.dirname(__file__), *parts), encoding='utf-8').read()
 
+
 classifiers = [
     'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
@@ -40,3 +41,4 @@ setup(name='xmlunittest',
       py_modules=['xmlunittest'],
       install_requires=['lxml>=3.3.6'],
       classifiers=classifiers)
+
