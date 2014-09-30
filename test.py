@@ -431,7 +431,7 @@ class TestXmlTestCase(unittest.TestCase):
         """
 
         with open(filename, 'w') as dtd_file:
-            dtd_file.write(dtd.encode('utf8'))
+            dtd_file.write(dtd)
 
         data = b"""<?xml version="1.0" encoding="utf-8"?>
         <root>
@@ -561,7 +561,7 @@ class TestXmlTestCase(unittest.TestCase):
         """
         test_case = XmlTestCase(methodName='assertXmlValidXSchema')
 
-        xschema = b"""<?xml version="1.0" encoding="utf-8"?>
+        xschema = """<?xml version="1.0" encoding="utf-8"?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
             <xsd:element name="root">
                 <xsd:complexType>
@@ -583,7 +583,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         filename = 'test_assertXmlValidXSchema_filename.xml'
         with open(filename, 'w') as xchema_file:
-            xchema_file.write(xschema.encode('utf8'))
+            xchema_file.write(xschema)
 
         data = b"""<?xml version="1.0" encoding="utf-8"?>
         <root>
@@ -729,7 +729,7 @@ class TestXmlTestCase(unittest.TestCase):
 
         filename = 'test_assertXmlValidRelaxNG_filename.xml'
         with open(filename, 'w') as relaxng_file:
-            relaxng_file.write(relaxng.encode('utf8'))
+            relaxng_file.write(relaxng)
 
         data = b"""<?xml version="1.0" encoding="utf-8"?>
         <root>

@@ -1,7 +1,6 @@
 """Unittest module for XML testing purpose."""
 from __future__ import unicode_literals
 
-import doctest
 import io
 import unittest
 
@@ -163,10 +162,10 @@ class XmlTestMixin(object):
         """Asserts XML node is valid according to the given DTD."""
         schema = None
 
-        if dtd is not None and not isinstance(dtd, etree.DTD):
-            schema = etree.DTD(io.StringIO(dtd))
-        elif isinstance(dtd, etree.DTD):
+        if isinstance(dtd, etree.DTD):
             schema = dtd
+        elif dtd is not None:
+            schema = etree.DTD(io.StringIO(dtd))
 
         if schema is None and filename is not None:
             with open(filename, 'r') as fd:
@@ -178,7 +177,8 @@ class XmlTestMixin(object):
         if not schema.validate(node):
             self.fail(schema.error_log.last_error)
 
-    def assertXmlValidXSchema(self, node, xschema=None, filename=None):
+    def assertXmlValidXSchema(self, node, xschema=None, filename=None,
+                              encoding='utf-8'):
         """Asserts XML node is valid according to the given XML Schema."""
         schema = None
 
@@ -189,7 +189,7 @@ class XmlTestMixin(object):
 
         if xschema is None and filename is not None:
             with open(filename, 'r') as xschema_file:
-                schema = etree.XMLSchema(etree.XML(xschema_file.read()))
+                schema = etree.XMLSchema(etree.XML(xschema_file.read().encode(encoding)))
 
         if schema is None:
             raise ValueError('No valid XMLSchema given.')
@@ -197,7 +197,7 @@ class XmlTestMixin(object):
         if not schema.validate(node):
             self.fail(schema.error_log.last_error)
 
-    def assertXmlValidRelaxNG(self, node, relaxng=None, filename=None):
+    def assertXmlValidRelaxNG(self, node, relaxng=None, filename=None, encoding='utf-8'):
         """Asserts XML node is valid according to the given RelaxNG."""
         schema = None
 
@@ -208,7 +208,7 @@ class XmlTestMixin(object):
 
         if relaxng is None and filename is not None:
             with open(filename, 'r') as relaxng_file:
-                schema = etree.RelaxNG(etree.XML(relaxng_file.read()))
+                schema = etree.RelaxNG(etree.XML(relaxng_file.read().encode(encoding)))
 
         if schema is None:
             raise ValueError('No valid RelaxNG given.')
@@ -230,9 +230,10 @@ class XmlTestMixin(object):
         checker = LXMLOutputChecker()
 
         if not checker.check_output(expected, data, PARSE_XML):
-            message = checker.output_difference(doctest.Example("", expected),
-                                                data, PARSE_XML)
-            self.fail(message)
+            self.fail('Output are not equivalent:\n'
+                      'Given: %s\n'
+                      'Expected: %s'
+                      % (data, expected))
 
 
 class XmlTestCase(unittest.TestCase, XmlTestMixin):

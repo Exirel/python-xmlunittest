@@ -24,14 +24,14 @@ classifiers = [
     'Intended Audience :: Developers',
     'License :: OSI Approved :: MIT License',
     'Programming Language :: Python :: 2.7',
-    'Programming Language :: Python :: 3.3',
+    'Programming Language :: Python :: 3.4',
     'Topic :: Software Development :: Libraries :: Python Modules',
     'Topic :: Software Development :: Testing',
     'Topic :: Text Processing :: Markup :: XML'
 ]
 
 setup(name='xmlunittest',
-      version='0.2.0',
+      version='0.3.0',
       description='Library using lxml and unittest for unit testing XML.',
       long_description=read('README.rst'),
       author='Florian Strzelecki',
