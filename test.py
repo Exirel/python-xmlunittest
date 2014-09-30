@@ -3,11 +3,11 @@
 from __future__ import unicode_literals
 
 import io
+import os
 import unittest
 
 from lxml import etree
 from xmlunittest import XmlTestCase
-import os
 
 
 class TestXmlTestCase(unittest.TestCase):
@@ -884,5 +884,4 @@ class TestXmlTestCase(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.test_assertXmlDocument']
     unittest.main()
