@@ -44,6 +44,7 @@ Python ``xmlunittest`` has been tested with:
 
 * ``lxml`` version 3.4.0
 * Python 2.7.6
+* Python 3.3.0
 * Python 3.4.0
 
 Be aware: as a lot of string manipulation is involved, a lot of issues can
@@ -151,7 +152,7 @@ Tips
 
 **Do**:
 
-* Always tests with both Python 2.7 and Python 3.4.
+* Always tests with both Python 2.7, Python 3.3 and Python 3.4.
 * Always tests with namespaces
 * Always provide unit-tests.
 * Always provide documentation.
