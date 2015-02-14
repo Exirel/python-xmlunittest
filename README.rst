@@ -66,3 +66,13 @@ Example:
             # Check
             self.assertXpathsUniqueValue(root, ('./leaf@id', ))
             self.assertXpathValues(root, './leaf@active', ('on', 'off'))
+
+
+Running the tests
+======
+
+To run the unit tests for this package::
+
+
+    pip install tox
+    tox
