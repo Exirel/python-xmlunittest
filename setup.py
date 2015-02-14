@@ -8,7 +8,6 @@ Python library for unit-testing of XML document using lxml.
 - Source: https://github.com/Exirel/python-xmlunittest
 
 """
-
 import codecs
 import os
 
@@ -25,7 +24,6 @@ classifiers = [
     'Intended Audience :: Developers',
     'License :: OSI Approved :: MIT License',
     'Programming Language :: Python :: 2.7',
-    'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
     'Topic :: Software Development :: Libraries :: Python Modules',
     'Topic :: Software Development :: Testing',

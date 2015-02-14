@@ -67,7 +67,7 @@ Document assertions
 
    :param string root_tag: Optional, root element's tag name
 
-   One can provide the root element's tag name to the method for his own
+   One can provide the root element's tag name to the method for their own
    convenience.
 
    .. rubric:: Example
@@ -494,11 +494,11 @@ your own schema objects in these various schema languages.
 XML documents comparison assertion
 ==================================
 
-Sometimes, one may want to check a global XML document, because he know exactly
-what is expected, and can rely on a kind of "string compare". Of course, XML
-is not a simple string, and requires more than just an
+Sometimes, one may want to check a global XML document, because they know
+exactly what is expected, and can rely on a kind of "string compare". Of
+course, XML is not a simple string, and requires more than just an
 ``assert data == expected``, because order of elements can vary, order of
-attributes, etc.
+attributes too, namespaces can come into play, etc.
 
 In these cases, one can use the powerful - also dangerous - feature of `LXML
 Output Checker`. See also the documentation of the module
@@ -506,8 +506,8 @@ Output Checker`. See also the documentation of the module
 more information on the underlying implementation.
 
 And as always, remember that the whole purpose of this :py:mod:`xmlunittest`
-is to **not** compare XML formated string. But, whatever, this function could
-help. May be.
+is to **avoid** any comparison of XML formated strings. But, whatever, this
+function could help. Maybe.
 
 .. py:method:: XmlTestMixin.assertXmlEquivalentOutputs(data, expected)
 

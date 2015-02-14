@@ -17,7 +17,6 @@ class XmlTestMixin(object):
 
     One may want to extends unittest.TestCase itself, and then uses this
     mixin class to add specific XML assertions.
-
     """
     default_partial_tag = 'partialTest'
 
@@ -25,7 +24,6 @@ class XmlTestMixin(object):
         """Asserts `data` is an XML document and returns it.
 
         Assertion and XML parsing using lxml.
-
         """
         # no assertion yet
         try:
@@ -57,7 +55,6 @@ class XmlTestMixin(object):
         """Asserts `node` declares namespace `uri` using `prefix`.
 
         One can use this method on element node.
-
         """
         self.assertIn(prefix, node.nsmap)
         self.assertEqual(node.nsmap.get(prefix), uri)
@@ -67,7 +64,6 @@ class XmlTestMixin(object):
 
         Argument `attribute` must be the attribute's name, with
         namespace's prefix (notation 'ns:att' and not '{uri}att').
-
         """
         assert attribute in node.attrib
 
@@ -79,9 +75,7 @@ class XmlTestMixin(object):
                           kwargs.get('expected_values'))
 
     def assertXmlNode(self, node, **kwargs):
-        """Asserts `node` is an element node with expected tag and value.
-
-        """
+        """Asserts `node` is an element node with expected tag and value."""
         # Assert `node` is an element node and not None or a string or
         # anything like this
         self.assertIsInstance(node, etree._Element)
@@ -189,7 +183,8 @@ class XmlTestMixin(object):
 
         if xschema is None and filename is not None:
             with open(filename, 'r') as xschema_file:
-                schema = etree.XMLSchema(etree.XML(xschema_file.read().encode(encoding)))
+                schema = etree.XMLSchema(
+                    etree.XML(xschema_file.read().encode(encoding)))
 
         if schema is None:
             raise ValueError('No valid XMLSchema given.')
@@ -197,7 +192,8 @@ class XmlTestMixin(object):
         if not schema.validate(node):
             self.fail(schema.error_log.last_error)
 
-    def assertXmlValidRelaxNG(self, node, relaxng=None, filename=None, encoding='utf-8'):
+    def assertXmlValidRelaxNG(self, node, relaxng=None, filename=None,
+                              encoding='utf-8'):
         """Asserts XML node is valid according to the given RelaxNG."""
         schema = None
 
@@ -208,7 +204,8 @@ class XmlTestMixin(object):
 
         if relaxng is None and filename is not None:
             with open(filename, 'r') as relaxng_file:
-                schema = etree.RelaxNG(etree.XML(relaxng_file.read().encode(encoding)))
+                schema = etree.RelaxNG(
+                    etree.XML(relaxng_file.read().encode(encoding)))
 
         if schema is None:
             raise ValueError('No valid RelaxNG given.')
@@ -225,7 +222,6 @@ class XmlTestMixin(object):
         check than just a kind of output.
 
         See LXMLOutputChecker documentation for more information.
-
         """
         checker = LXMLOutputChecker()
 
@@ -239,10 +235,9 @@ class XmlTestMixin(object):
 class XmlTestCase(unittest.TestCase, XmlTestMixin):
     """XML test case for unit test using python unittest built-in package.
 
-    One can extends this class for his test case and use helpful assertion
-    method.
+    One can extends this class for their test cases and use helpful assertion
+    methods.
 
     XML parsing uses python lxml.etree.
-
     """
     pass

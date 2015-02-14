@@ -1,3 +1,5 @@
 pytest>=2.0.3
 pytest-cov>=1.8.1
 lxml>=2.3,<3.4.0
+tox>=1.8.1
+sphinx>=1.2.3

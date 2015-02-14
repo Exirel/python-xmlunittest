@@ -42,9 +42,8 @@ Compatibility
 
 Python ``xmlunittest`` has been tested with:
 
-* ``lxml`` version 3.4.0
+* ``lxml`` version 3.0 and 3.4.
 * Python 2.7.6
-* Python 3.3.0
 * Python 3.4.0
 
 Be aware: as a lot of string manipulation is involved, a lot of issues can
@@ -55,6 +54,27 @@ a Py2/Py3 compatible library.
 
    Python 2.7.6 support is maintained for now, but it will be eventually
    dropped. It's never too late to switch to Python 3!
+
+LXML version 2.x or 3.x?
+------------------------
+
+When dealing with version number, it appears that ``xmlunittest`` works with:
+
+* Python 2.7 and lxml 2.3.5 and above.
+* Pytonn 3.4 and lmxl 3.0 and above.
+
+.. warning::
+
+   No, ``xmlunittest`` **does not work** with Python 3 and an older version of
+   lxml < 3.0. Also, note that this package is only tested with lxml >= 3.0.
+   It works, but without warranty.
+
+Why not Python 3.3?
+-------------------
+
+This package works with Python 2.7, but it's only because we are lucky enough.
+This is a small project, and it does not aim to support more than one major
+version of python. The latest, the better!
 
 
 How to
@@ -93,7 +113,7 @@ Example::
 
 
 Alternativly, one can use the :py:class:`XmlTestMixin` instead of the
-:py:class:`XmlTestCase`, as long as its own class also extends
+:py:class:`XmlTestCase`, as long as their own class also extends
 :py:class:`unittest.TestCase`.
 
 This is convenient when there is already a subclass of
@@ -134,8 +154,8 @@ and again? If it is related only to XML tests, maybe you can share it?
 
 First, you can fork the `project's github repository`__, then you will need
 some tools for development: all dependencies are available into the
-``requirements.txt`` file. You should also use a virtualenv (in fact two, one
-per python version).
+``requirements.txt`` file. You should also use a virtualenv (use two for each
+version, or use tox).
 
 See an example of install (without virtualenv)::
 
@@ -147,13 +167,32 @@ See an example of install (without virtualenv)::
 
 .. __: https://github.com/Exirel/python-xmlunittest
 
+.. note::
+
+   Installing lxml is not easy if you are not prepared. You will need some
+   extra source package on your favorite OS (in particular some XML libs and
+   python sources).
+
+
+Testing with tox
+----------------
+
+Now that ``xmlunittest`` uses `tox`__ to run the tests, it's even easier to
+perform tests on multiple version of python. Instead of using ``py.test`` do::
+
+   $ tox test
+
+And that's all! **Remember: Python 2.7 and Python 3.4. Nothing more.**
+
+.. __: https://tox.readthedocs.org/en/latest/
+
 Tips
 ----
 
 **Do**:
 
-* Always tests with both Python 2.7, Python 3.3 and Python 3.4.
-* Always tests with namespaces
+* Always test with both Python 2.7 and Python 3.4 - use Tox!
+* Always test with namespaces
 * Always provide unit-tests.
 * Always provide documentation.
 * It's better to respect PEP8.
@@ -162,7 +201,7 @@ Tips
 
 * Never add any other library. ``xmlunittest`` uses ``lxml`` and that's enough!
 * If you have to add a ``data.encode(charset)`` into an assert method, it's
-  probably not be a good idea.
+  probably not a good idea.
 * XML documents can not be compared as simple strings. Don't compare them
-  as simple string. Don't.
-* Don't write more than 80 characters per line. Please. Don't.
+  as simple string. **Don't.**
+* Don't write more than 80 characters per line. Please. **Don't.**

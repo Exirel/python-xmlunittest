@@ -35,7 +35,7 @@ Links
 How to
 ======
 
-- Extends xmlunittest.XmlTestCase
+- Extends ``xmlunittest.XmlTestCase``
 - Write your tests, using the function or method that generate XML document
 - Use xmlunittest.XmlTestCase‘s assertion methods to validate
 - Keep your test readable
@@ -66,13 +66,3 @@ Example:
             # Check
             self.assertXpathsUniqueValue(root, ('./leaf@id', ))
             self.assertXpathValues(root, './leaf@active', ('on', 'off'))
-
-
-Running the tests
-======
-
-To run the unit tests for this package::
-
-
-    pip install tox
-    tox
