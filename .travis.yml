@@ -10,7 +10,7 @@ install:
 script: 
     - python setup.py test
 # If you want to add coverage :
-    - coverage run setup.py test
+    - coverage run --source=xmlunittest setup.py test
 after_success:
     - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then coveralls; fi
 branches:
