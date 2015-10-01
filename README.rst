@@ -4,13 +4,13 @@ Python XML-Unittest
 
 .. image:: https://travis-ci.org/Exirel/python-xmlunittest.svg?branch=master
     :target: https://travis-ci.org/Exirel/python-xmlunittest
-.. image:: https://coveralls.io/repos/github/Exirel/python-xmlunittest/badge.svg?branch=master
+.. image:: https://coveralls.io/repos/Exirel/python-xmlunittest/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/Exirel/python-xmlunittest?branch=master
 .. image:: https://gemnasium.com/Exirel/python-xmlunittest.svg
     :target:https://gemnasium.com/Exirel/python-xmlunittest
 .. image:: https://badge.fury.io/py/xmlunittest.svg
     :target: http://badge.fury.io/py/xmlunittest
-    
+
 Anyone uses XML, for RSS, for configuration files, for... well, we all use XML
 for our own reasons (folk says one can not simply uses XML, but still...).
 
