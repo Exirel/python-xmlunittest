@@ -7,7 +7,7 @@ Python XML-Unittest
 .. image:: https://coveralls.io/repos/Exirel/python-xmlunittest/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/Exirel/python-xmlunittest?branch=master
 .. image:: https://gemnasium.com/Exirel/python-xmlunittest.svg
-    :target:https://gemnasium.com/Exirel/python-xmlunittest
+    :target: https://gemnasium.com/Exirel/python-xmlunittest
 .. image:: https://badge.fury.io/py/xmlunittest.svg
     :target: http://badge.fury.io/py/xmlunittest
 
