@@ -1,0 +1,18 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+# command to install dependencies
+install: 
+    - pip install -r requirements.txt
+    - pip install coveralls
+# command to run tests
+script: 
+    - python setup.py test
+# If you want to add coverage :
+    - coverage run --source=xmlunittest setup.py test
+after_success:
+    - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then coveralls; fi
+branches:
+  only:
+    - master

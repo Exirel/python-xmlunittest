@@ -39,5 +39,6 @@ setup(name='xmlunittest',
       license='MIT',
       url='http://python-xmlunittest.readthedocs.org/en/latest/',
       py_modules=['xmlunittest'],
-      install_requires=['lxml>=2.3,<3.4.0'],
+      test_suite="test",
+      install_requires=['lxml>=2.3,<=3.4.4'],
       classifiers=classifiers)
