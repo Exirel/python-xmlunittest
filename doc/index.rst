@@ -42,9 +42,9 @@ Compatibility
 
 Python ``xmlunittest`` has been tested with:
 
-* ``lxml`` version 3.0 and 3.4.
+* ``lxml`` version 3.0, 3.4 and 3.5
 * Python 2.7.6
-* Python 3.4.0
+* Python 3.4.3
 
 Be aware: as a lot of string manipulation is involved, a lot of issues can
 happen with unicode/bytestring. It's always a bit tough when dealing with
