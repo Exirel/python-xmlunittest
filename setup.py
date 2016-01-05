@@ -31,7 +31,7 @@ classifiers = [
 ]
 
 setup(name='xmlunittest',
-      version='0.3.1',
+      version='0.3.2',
       description='Library using lxml and unittest for unit testing XML.',
       long_description=read('README.rst'),
       author='Florian Strzelecki',
@@ -40,5 +40,5 @@ setup(name='xmlunittest',
       url='http://python-xmlunittest.readthedocs.org/en/latest/',
       py_modules=['xmlunittest'],
       test_suite="test",
-      install_requires=['lxml>=2.3,<=3.4.4'],
+      install_requires=['lxml>=2.3,<4.0.0'],
       classifiers=classifiers)
