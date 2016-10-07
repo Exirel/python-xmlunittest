@@ -5,9 +5,8 @@ import io
 import unittest
 
 from lxml import etree
-from lxml.etree import XMLSyntaxError
-from lxml.doctestcompare import LXMLOutputChecker, PARSE_XML
-
+from lxml.doctestcompare import PARSE_XML, LXMLOutputChecker
+from lxml.etree import XMLSyntaxError, XPathSyntaxError
 
 __all__ = ['XmlTestMixin', 'XmlTestCase']
 
@@ -19,6 +18,45 @@ class XmlTestMixin(object):
     mixin class to add specific XML assertions.
     """
     default_partial_tag = 'partialTest'
+
+    def fail_xpath_error(self, node, xpath, exception):
+        """Format an xpath ``expression`` error for the given ``node``.
+
+        This method should be used instead of the ``fail`` method.
+        """
+        doc = etree.tostring(node, pretty_print=True)
+        self.fail(
+            'Invalid XPath expression for element %s: %s\n'
+            'Xpath: %s\n'
+            'Element:\n'
+            '%s' % (node.tag, str(exception), xpath, doc))
+
+    def fail_xpath_not_found(self, node, expression):
+        doc = etree.tostring(node, pretty_print=True)
+        self.fail(
+            'No result found for XPath for element %s\n'
+            'XPath: %s\n'
+            'Element:\n'
+            '%s' % (node.tag, expression.path, doc))
+
+    def build_xpath_expressions(self, node, xpaths, default_ns_prefix='ns'):
+        namespaces = dict(
+            (prefix or default_ns_prefix, url)
+            for prefix, url in node.nsmap.items())
+        return [
+            etree.XPath(xpath, namespaces=namespaces)
+            for xpath in xpaths
+        ]
+
+    def build_xpath_expression(self, node, xpath, default_ns_prefix='ns'):
+        namespaces = dict(
+            (prefix or default_ns_prefix, url)
+            for prefix, url in node.nsmap.items())
+
+        try:
+            return etree.XPath(xpath, namespaces=namespaces)
+        except XPathSyntaxError as error:
+            self.fail_xpath_error(node, xpath, error)
 
     def assertXmlDocument(self, data):
         """Asserts `data` is an XML document and returns it.
@@ -35,9 +73,9 @@ class XmlTestMixin(object):
 
     def assertXmlPartial(self, partial_data, root_tag=None):
         """Asserts `data` is an XML partial document, and returns result."""
-        tag_name = (root_tag
-                        if root_tag is not None
-                        else self.default_partial_tag)
+        tag_name = (
+            root_tag if root_tag is not None
+            else self.default_partial_tag)
         consolidated = '<%s>%s</%s>' % (tag_name, partial_data, tag_name)
 
         try:
@@ -69,7 +107,7 @@ class XmlTestMixin(object):
 
         if 'expected_value' in kwargs:
             self.assertEqual(node.attrib.get(attribute),
-                              kwargs.get('expected_value'))
+                             kwargs.get('expected_value'))
         elif 'expected_values' in kwargs:
             self.assertIn(node.attrib.get(attribute),
                           kwargs.get('expected_values'))
@@ -90,30 +128,33 @@ class XmlTestMixin(object):
         if 'text_in' in kwargs:
             self.assertIn(node.text, kwargs.get('text_in'))
 
-    def assertXpathsExist(self, node, xpaths):
+    def assertXpathsExist(self, node, xpaths, default_ns_prefix='ns'):
         """Asserts each XPath is valid for element `node`."""
-        expressions = [etree.XPath(xpath) for xpath in xpaths]
+        expressions = self.build_xpath_expressions(node,
+                                                   xpaths,
+                                                   default_ns_prefix)
         for expression in expressions:
-            if not expression.evaluate(node):
-                self.fail('No result found for XPath on element %s:\n'
-                          'XPath: %s\n'
-                          'Element:\n'
-                          '%s' % (node.tag,
-                                  expression.path,
-                                  etree.tostring(node, pretty_print=True)))
+            try:
+                if not expression.evaluate(node):
+                    self.fail_xpath_not_found(node, expression)
+            except etree.XPathEvalError as error:
+                self.fail_xpath_error(node, expression.path, error)
 
-    def assertXpathsOnlyOne(self, node, xpaths):
+    def assertXpathsOnlyOne(self, node, xpaths, default_ns_prefix='ns'):
         """Asserts each xpath's result returns only one element."""
-        expressions = [etree.XPath(xpath) for xpath in xpaths]
+        expressions = self.build_xpath_expressions(node,
+                                                   xpaths,
+                                                   default_ns_prefix)
 
         for expression in expressions:
-            results = expression.evaluate(node)
+            try:
+                results = expression.evaluate(node)
+            except etree.XPathEvalError as error:
+                self.fail_xpath_error(node, expression.path, error)
+
             if not results:
-                self.fail('No result found for XPath on element %s:\n'
-                          'XPath: %s\n'
-                          'Element:\n%s'
-                          % (node.tag, expression.path,
-                             etree.tostring(node, pretty_print=True)))
+                self.fail_xpath_not_found(node, expression)
+
             count = len(results)
             if count > 1:
                 self.fail('Too many results found (%d) for XPath on '
@@ -125,12 +166,17 @@ class XmlTestMixin(object):
                                   expression.path,
                                   etree.tostring(node, pretty_print=True)))
 
-    def assertXpathsUniqueValue(self, node, xpaths):
+    def assertXpathsUniqueValue(self, node, xpaths, default_ns_prefix='ns'):
         """Asserts each xpath's value is unique in the selected elements."""
-        expressions = [etree.XPath(xpath) for xpath in xpaths]
+        expressions = self.build_xpath_expressions(node,
+                                                   xpaths,
+                                                   default_ns_prefix)
 
         for expression in expressions:
-            results = expression.evaluate(node)
+            try:
+                results = expression.evaluate(node)
+            except etree.XPathEvalError as error:
+                self.fail_xpath_error(node, expression.path, error)
 
             if len(results) != len(set(results)):
                 self.fail('Value is not unique for element %s:\n'
@@ -139,9 +185,15 @@ class XmlTestMixin(object):
                           % (node.tag, expression.path,
                              etree.tostring(node, pretty_print=True)))
 
-    def assertXpathValues(self, node, xpath, values):
+    def assertXpathValues(self, node, xpath, values, default_ns_prefix='ns'):
         """Asserts each xpath's value is in the expected values."""
-        results = node.xpath(xpath)
+        expression = self.build_xpath_expression(node,
+                                                 xpath,
+                                                 default_ns_prefix)
+        try:
+            results = expression.evaluate(node)
+        except etree.XPathEvalError as error:
+            self.fail_xpath_error(node, expression.path, error)
 
         for result in results:
             if result not in values:

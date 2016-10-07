@@ -61,7 +61,7 @@ LXML version 2.x or 3.x?
 When dealing with version number, it appears that ``xmlunittest`` works with:
 
 * Python 2.7 and lxml 2.3.5 and above.
-* Pytonn 3.4 and lmxl 3.0 and above.
+* Python 3.4 and lmxl 3.0 and above.
 
 .. warning::
 

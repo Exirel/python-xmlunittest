@@ -186,10 +186,12 @@ Element assertions
 XPath expression assertions
 ===========================
 
-.. py:method:: XmlTestMixin.assertXpathsExist(node, xpaths)
+.. py:method:: XmlTestMixin.assertXpathsExist(node, xpaths, default_ns_prefix='ns')
 
    :param node: Element node
    :param tuple xpaths: List of XPath expressions
+   :param string default_ns_prefix: Optional, value of the default namespace
+      prefix
 
    Asserts each XPath from `xpaths` evaluates on `node` to at least one element
    or a not `None` value.
@@ -214,10 +216,12 @@ XPath expression assertions
       # ...
 
 
-.. py:method:: XmlTestMixin.assertXpathsOnlyOne(node, xpaths)
+.. py:method:: XmlTestMixin.assertXpathsOnlyOne(node, xpaths, default_ns_prefix='ns')
 
    :param node: Element node
    :param tuple xpaths: List of XPath expressions
+   :param string default_ns_prefix: Optional, value of the default namespace
+      prefix
 
    Asserts each XPath's result returns only one element.
 
@@ -241,10 +245,12 @@ XPath expression assertions
 
       # ...
 
-.. py:method:: XmlTestMixin.assertXpathsUniqueValue(node, xpaths)
+.. py:method:: XmlTestMixin.assertXpathsUniqueValue(node, xpaths, default_ns_prefix='ns')
 
    :param node: Element node
    :param tuple xpaths: List of XPath expressions
+   :param string default_ns_prefix: Optional, value of the default namespace
+      prefix
 
    Asserts each XPath's result's value is unique in the selected elements.
 
@@ -278,11 +284,13 @@ XPath expression assertions
       # ...
 
 
-.. py:method:: XmlTestMixin.assertXpathValues(node, xpath, values)
+.. py:method:: XmlTestMixin.assertXpathValues(node, xpath, values, default_ns_prefix='ns')
 
    :param node: Element node
    :param string xpath: XPath expression to select elements
    :param tuple values: List of accepted values
+   :param string default_ns_prefix: Optional, value of the default namespace
+      prefix
 
    Asserts each selected element's result from XPath expression is in the list
    of expected values.

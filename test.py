@@ -7,7 +7,11 @@ import os
 import unittest
 
 from lxml import etree
+
 from xmlunittest import XmlTestCase
+
+DEFAULT_NS = 'https://www.w3.org/XML'
+TEST_NS = 'https://docs.python.org/3.4/library/unittest.html'
 
 
 class TestXmlTestCase(unittest.TestCase):
@@ -305,6 +309,117 @@ class TestXmlTestCase(unittest.TestCase):
         with self.assertRaises(test_case.failureException):
             test_case.assertXpathsExist(root, ['./sub[@subAtt="invalid"]'])
 
+    def test_assertXpathsExist_namespaces_default_prefix(self):
+        """Asserts assertXpathsExist works with default namespaces."""
+        test_case = XmlTestCase(methodName='assertXpathsExist')
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root att="exists" xmlns="https://www.w3.org/XML">
+            <sub subAtt="input"/>
+            <sub/>
+        </root>"""
+
+        root = test_case.assertXmlDocument(data)
+        xpaths = ['@att', './ns:sub', './ns:sub[@subAtt="input"]']
+        test_case.assertXpathsExist(root, xpaths)
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsExist(root, ['@invalidAtt'])
+
+        with self.assertRaises(test_case.failureException):
+            # Without the namespace prefix, it does not work
+            test_case.assertXpathsExist(root, ['./sub'])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsExist(root, ['./ns:invalidChild'])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsExist(root, ['./ns:sub[@subAtt="invalid"]'])
+
+    def test_assertXpathsExist_namespaces_custom_prefix(self):
+        """Asserts assertXpathsExist works with custom default namespaces."""
+        test_case = XmlTestCase(methodName='assertXpathsExist')
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root att="exists" xmlns="https://www.w3.org/XML">
+            <sub subAtt="input"/>
+            <sub/>
+        </root>"""
+
+        root = test_case.assertXmlDocument(data)
+        # With a custom default prefix
+        xpaths = ['@att', './custom:sub', './custom:sub[@subAtt="input"]']
+        test_case.assertXpathsExist(root, xpaths, default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsExist(root,
+                                        ['@invalidAtt'],
+                                        default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            # Without the namespace prefix, it does not work
+            test_case.assertXpathsExist(root,
+                                        ['./sub'],
+                                        default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            # With the wrong namespace it does not work either
+            test_case.assertXpathsExist(root,
+                                        ['./ns:sub'],
+                                        default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsExist(root,
+                                        ['./custom:invalidChild'],
+                                        default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsExist(root,
+                                        ['./custom:sub[@subAtt="invalid"]'],
+                                        default_ns_prefix='custom')
+
+    def test_assertXpathsExist_namespaces(self):
+        """Asserts assertXpathsExist works with namespaces."""
+        test_case = XmlTestCase(methodName='assertXpathsExist')
+        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        <root att="exists" xmlns="%s" xmlns:test="%s">
+            <sub subAtt="DEFAULT_ATT" test:subAtt="NODE_NS-ATT"/>
+            <sub/>
+            <test:sub subAtt="NS-NODE_ATT" />
+            <test:sub test:subAtt="NS-NODE_NS-ATT" />
+        </root>""" % (DEFAULT_NS, TEST_NS)
+
+        root = test_case.assertXmlDocument(data.encode('utf-8'))
+        xpaths = [
+            # attribute without namespace
+            '@att',
+            # node with default namespace with a namespaced attribute
+            './ns:sub[@test:subAtt="NODE_NS-ATT"]',
+            # namespaced node
+            './test:sub',
+            # namespaced node with non-namespaced attribute
+            './test:sub[@subAtt="NS-NODE_ATT"]',
+            # namespaced node with namespaced attribute
+            './test:sub[@test:subAtt="NS-NODE_NS-ATT"]']
+        test_case.assertXpathsExist(root, xpaths)
+
+        with self.assertRaises(test_case.failureException):
+            # This attribute does not exist with such namespace
+            test_case.assertXpathsExist(root, ['@test:att'])
+
+        with self.assertRaises(test_case.failureException):
+            # This node with this attribute does not have this value,
+            # only the namespaced attribute of this node has this value.
+            test_case.assertXpathsExist(root, ['./ns:sub[@subAtt="NODE_NS-ATT"]'])
+
+        with self.assertRaises(test_case.failureException):
+            # We just make sure we use XPath properly and we don't hack the
+            # XML document with "ignore all namespaces". We are respectful of
+            # namespaces.
+            test_case.assertXpathsExist(root, ['./ns:sub[@test:subAtt="DEFAULT_ATT"]'])
+
+        with self.assertRaises(test_case.failureException):
+            # Really, we don't mess with namespaces.
+            test_case.assertXpathsExist(root, ['./ns:sub[@ns:subAtt="DEFAULT_ATT"]'])
+
     # -------------------------------------------------------------------------
 
     def test_assertXpathsOnlyOne(self):
@@ -334,6 +449,97 @@ class TestXmlTestCase(unittest.TestCase):
         with self.assertRaises(test_case.failureException):
             test_case.assertXpathsOnlyOne(root, ['./sub[@subAtt="notUnique"]'])
 
+    def test_assertXpathsOnlyOne_namespaces_default_prefix(self):
+        """Asserts assertXpathsOnlyOne works with default namespace prefix"""
+        test_case = XmlTestCase(methodName='assertXpathsOnlyOne')
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns="https://www.w3.org/XML">
+            <sub subAtt="unique" id="1" />
+            <sub subAtt="notUnique" id="2"/>
+            <sub subAtt="notUnique" id="3"/>
+            <uniqueSub/>
+        </root>"""
+
+        root = test_case.assertXmlDocument(data)
+        unique_for_each = ['./ns:uniqueSub',
+                           './ns:sub[@subAtt="unique"]']
+        test_case.assertXpathsOnlyOne(root, unique_for_each)
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsOnlyOne(root, ['./ns:invalidChild'])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsOnlyOne(root, ['./ns:sub[@subAtt="notUnique"]'])
+
+    def test_assertXpathsOnlyOne_namespaces_custom_prefix(self):
+        """Asserts assertXpathsOnlyOne works with custom namespace prefix"""
+        test_case = XmlTestCase(methodName='assertXpathsOnlyOne')
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns="https://www.w3.org/XML">
+            <sub subAtt="unique" id="1" />
+            <sub subAtt="notUnique" id="2"/>
+            <sub subAtt="notUnique" id="3"/>
+            <uniqueSub/>
+        </root>"""
+
+        root = test_case.assertXmlDocument(data)
+        unique_for_each = ['./custom:uniqueSub',
+                           './custom:sub[@subAtt="unique"]']
+        test_case.assertXpathsOnlyOne(root,
+                                      unique_for_each,
+                                      default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsOnlyOne(root,
+                                          ['./custom:invalidChild'],
+                                          default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            # Wrong namespace: the node exists but not with this namespace.
+            # That's why namespaces exist after all.
+            test_case.assertXpathsOnlyOne(root,
+                                          ['./ns:uniqueSub'],
+                                          default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsOnlyOne(root, ['./custom:sub[@subAtt="notUnique"]'])
+
+    def test_assertXpathsOnlyOne_namespaces(self):
+        """Asserts assertXpathsOnlyOne works with namespace"""
+        test_case = XmlTestCase(methodName='assertXpathsOnlyOne')
+        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns="%s" xmlns:test="%s">
+            <sub subAtt="unique" id="1" />
+            <sub subAtt="notUnique" id="2"/>
+            <sub subAtt="notUnique" id="3"/>
+            <test:sub subAtt="notUnique" id="2"/>
+            <test:sub subAtt="notUnique" id="3"/>
+            <sub test:subAtt="unique" id="1" />
+            <uniqueSub/>
+            <test:uniqueSub/>
+        </root>""" % (DEFAULT_NS, TEST_NS)
+
+        root = test_case.assertXmlDocument(data.encode('utf-8'))
+        unique_for_each = ['./ns:sub[@subAtt="unique"]',
+                           './ns:sub[@test:subAtt="unique"]',
+                           './ns:uniqueSub',
+                           './test:uniqueSub']
+        test_case.assertXpathsOnlyOne(root, unique_for_each)
+
+        with self.assertRaises(test_case.failureException):
+            # ns:sub appears multiple time with subAtt == notUnique
+            test_case.assertXpathsOnlyOne(root, [
+                './ns:sub[@subAtt="notUnique"]'
+            ])
+
+        with self.assertRaises(test_case.failureException):
+            # test:sub appears multiple time with subAtt == notUnique
+            test_case.assertXpathsOnlyOne(root, [
+                './test:sub[@subAtt="notUnique"]'
+            ])
+
+    # -------------------------------------------------------------------------
+
     def test_assertXpathsUniqueValue(self):
         """Asserts assertXpathsUniqueValue raises when validation failed.
 
@@ -361,6 +567,106 @@ class TestXmlTestCase(unittest.TestCase):
         with self.assertRaises(test_case.failureException):
             test_case.assertXpathsUniqueValue(root, ['./multiple/text()'])
 
+    def test_assertXpathsUniqueValue_namespaces_default_prefix(self):
+        """Asserts assertXpathsUniqueValue works with default namespace prefix."""
+        test_case = XmlTestCase(methodName='assertXpathsUniqueValue')
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns="http://www.w3c.org/XML">
+            <sub subAtt="unique" id="1">unique 1</sub>
+            <sub subAtt="notUnique" id="2">unique 2</sub>
+            <sub subAtt="notUnique" id="3">unique 3</sub>
+            <multiple>twice</multiple>
+            <multiple>twice</multiple>
+        </root>"""
+        root = test_case.assertXmlDocument(data)
+
+        test_case.assertXpathsUniqueValue(root,
+                                          ['./ns:sub/@id', './ns:sub/text()'])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsUniqueValue(root, ['./ns:sub/@subAtt'])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsUniqueValue(root, ['./ns:multiple/text()'])
+
+    def test_assertXpathsUniqueValue_namespaces_custom_prefix(self):
+        """Asserts assertXpathsUniqueValue works with custom namespace prefix.
+        """
+        test_case = XmlTestCase(methodName='assertXpathsUniqueValue')
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns="http://www.w3c.org/XML">
+            <sub subAtt="unique" id="1">unique 1</sub>
+            <sub subAtt="notUnique" id="2">unique 2</sub>
+            <sub subAtt="notUnique" id="3">unique 3</sub>
+            <multiple>twice</multiple>
+            <multiple>twice</multiple>
+        </root>"""
+        root = test_case.assertXmlDocument(data)
+
+        test_case.assertXpathsUniqueValue(root,
+                                          ['./custom:sub/@id',
+                                           './custom:sub/text()'],
+                                          default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsUniqueValue(root, ['./custom:sub/@subAtt'])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsUniqueValue(root,
+                                              ['./custom:multiple/text()'])
+
+    def test_assertXpathsUniqueValue_namespaces(self):
+        """Asserts assertXpathsUniqueValue works with namespace."""
+        test_case = XmlTestCase(methodName='assertXpathsUniqueValue')
+        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns="%s" xmlns:test="%s">
+            <sub subAtt="unique" id="1">unique 1</sub>
+            <sub subAtt="notUnique" id="2">unique 2</sub>
+            <sub subAtt="notUnique" id="3">unique 3</sub>
+            <test:sub subAtt="unique" id="1">unique 1</test:sub>
+            <test:sub subAtt="notUnique" id="2">unique 2</test:sub>
+            <test:sub subAtt="notUnique" id="3">unique 3</test:sub>
+            <multiple>twice</multiple>
+            <multiple>twice</multiple>
+            <test:multiple>twice</test:multiple>
+            <test:multiple>twice</test:multiple>
+        </root>""" % (DEFAULT_NS, TEST_NS)
+        root = test_case.assertXmlDocument(data.encode('utf-8'))
+
+        # Note: the default namespace and test namespace create different nodes
+        # so their values and attributes are *not* in the same group.
+        # This is how XML namespaces work.
+        test_case.assertXpathsUniqueValue(root, [
+            # Node with default namespace: attribute ID
+            './ns:sub/@id',
+            # Node with default namespace: text
+            './ns:sub/text()',
+            # Node with "test" namespace: attribute ID
+            './test:sub/@id',
+            # Node with "test" namespace: text
+            './test:sub/text()',
+        ])
+
+        with self.assertRaises(test_case.failureException):
+            # Not unique attribute subAtt on ns:sub
+            test_case.assertXpathsUniqueValue(root, ['./ns:sub/@subAtt'])
+
+        with self.assertRaises(test_case.failureException):
+            # Not unique text value of ns:multiple
+            test_case.assertXpathsUniqueValue(root,
+                                              ['./ns:multiple/text()'])
+
+        with self.assertRaises(test_case.failureException):
+            # Not unique attribute subAtt on test:sub
+            test_case.assertXpathsUniqueValue(root, ['./test:sub/@subAtt'])
+
+        with self.assertRaises(test_case.failureException):
+            # Not unique text value of test:multiple
+            test_case.assertXpathsUniqueValue(root,
+                                              ['./test:multiple/text()'])
+
+    # -------------------------------------------------------------------------
+
     def test_assertXpathValues(self):
         """Asserts assertXpathValues raises when validation failed.
 
@@ -381,11 +687,112 @@ class TestXmlTestCase(unittest.TestCase):
         test_case.assertXpathValues(root, './sub/@id', ['1', '2', '3', '4'])
         test_case.assertXpathValues(root, './sub/text()', ['a', 'b', 'c'])
 
+        # This pass because the XPath expression returns 0 element.
+        # So "all" the existing values are one of the expected values.
+        # One should use assertXpathsExist instead
+        test_case.assertXpathValues(root, './absentSub/@id', ['1', '2'])
+
         with self.assertRaises(test_case.failureException):
             test_case.assertXpathValues(root, './sub/@id', ['1', '2'])
 
         with self.assertRaises(test_case.failureException):
             test_case.assertXpathValues(root, './sub/text()', ['a', 'b'])
+
+    def test_assertXpathValues_namespaces_default_prefix(self):
+        """Asserts assertXpathValues works with default namespaces."""
+        test_case = XmlTestCase(methodName='assertXpathValues')
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns="http://www.w3c.org/XML">
+            <sub id="1">a</sub>
+            <sub id="2">a</sub>
+            <sub id="3">b</sub>
+            <sub id="4">c</sub>
+        </root>"""
+        root = test_case.assertXmlDocument(data)
+
+        test_case.assertXpathValues(root, './ns:sub/@id', ['1', '2', '3', '4'])
+        test_case.assertXpathValues(root, './ns:sub/text()', ['a', 'b', 'c'])
+
+        with self.assertRaises(test_case.failureException):
+            # @id in ['3', '4'] is missing
+            test_case.assertXpathValues(root, './ns:sub/@id', ['1', '2'])
+
+        with self.assertRaises(test_case.failureException):
+            # text() == c is missing
+            test_case.assertXpathValues(root, './ns:sub/text()', ['a', 'b'])
+
+        with self.assertRaises(test_case.failureException):
+            # Unknown namespace
+            test_case.assertXpathValues(root, './custom:sub/@id', ['1', '2', '3', '4'])
+
+    def test_assertXpathValues_namespaces_custom_prefix(self):
+        """Asserts assertXpathValues works with custom namespaces."""
+        test_case = XmlTestCase(methodName='assertXpathValues')
+        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns="http://www.w3c.org/XML">
+            <sub id="1">a</sub>
+            <sub id="2">a</sub>
+            <sub id="3">b</sub>
+            <sub id="4">c</sub>
+        </root>"""
+        root = test_case.assertXmlDocument(data)
+
+        # Attribute value
+        test_case.assertXpathValues(root,
+                                    './custom:sub/@id',
+                                    ['1', '2', '3', '4'],
+                                    default_ns_prefix='custom')
+        # Node text value
+        test_case.assertXpathValues(root,
+                                    './custom:sub/text()',
+                                    ['a', 'b', 'c'],
+                                    default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathValues(root,
+                                        './custom:sub/@id',
+                                        ['1', '2'],
+                                        default_ns_prefix='custom')
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathValues(root,
+                                        './custom:sub/text()',
+                                        ['a', 'b'],
+                                        default_ns_prefix='custom')
+
+    def test_assertXpathValues_namespaces(self):
+        """Assert assertXpathValues works with namespaces."""
+        test_case = XmlTestCase(methodName='assertXpathValues')
+        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns="%s" xmlns:test="%s">
+            <sub test:id="1">a</sub>
+            <sub id="2">a</sub>
+            <sub id="3">b</sub>
+            <sub id="4">c</sub>
+            <test:sub>ns-a</test:sub>
+        </root>""" % (DEFAULT_NS, TEST_NS)
+        root = test_case.assertXmlDocument(data.encode('utf-8'))
+
+        # Attribute value without namespace
+        test_case.assertXpathValues(root,
+                                    './ns:sub/@id',
+                                    ['2', '3', '4'])
+
+        test_case.assertXpathValues(root,
+                                    './test:sub/text()',
+                                    ['ns-a'])
+
+        with self.assertRaises(test_case.failureException):
+            # Only the test:id attribute has value 1
+            test_case.assertXpathValues(root,
+                                        './ns:sub/@id',
+                                        ['1'])
+
+        with self.assertRaises(test_case.failureException):
+            # There is only one test:id attribute, and its value is not here
+            test_case.assertXpathValues(root,
+                                        './ns:sub/@test:id',
+                                        ['2', '3', '4'])
 
     # -------------------------------------------------------------------------
 
