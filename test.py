@@ -1,4 +1,4 @@
-# -*- conding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
 
@@ -33,14 +33,39 @@ class TestXmlTestCase(unittest.TestCase):
 
         """
         test_case = XmlTestCase(methodName='assertXmlDocument')
-        data = b"""<?xml version="1.0" encoding="UTF-8" ?>
-        <root/>"""
+        data = b"""<root/>"""
 
         root = test_case.assertXmlDocument(data)
         self.assertIsInstance(root, etree._Element)
 
         with self.assertRaises(test_case.failureException):
             test_case.assertXmlDocument('not an XML document')
+
+    def test_assertXmlDocument_with_encoding(self):
+        """Asserts assertXmlDocument works with utf-8 and other encoding."""
+        test_case = XmlTestCase(methodName='assertXmlDocument')
+
+        # utf-8
+        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        <root>àéèçßù</root>"""
+        root = test_case.assertXmlDocument(data.encode('utf-8'))
+        self.assertIsInstance(root, etree._Element)
+
+        # Check we can raise AssertionError with this document to check
+        # formatting of error messages
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsExist(root, ['//something'])
+
+        # iso-8859-15
+        data = """<?xml version="1.0" encoding="iso-8859-15" ?>
+        <root>àéèçßù</root>"""
+        root = test_case.assertXmlDocument(data.encode('iso-8859-15'))
+        self.assertIsInstance(root, etree._Element)
+
+        # Check we can raise AssertionError with this document to check
+        # formatting of error messages
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsExist(root, ['//something'])
 
     # -------------------------------------------------------------------------
 
@@ -1288,6 +1313,101 @@ class TestXmlTestCase(unittest.TestCase):
 
         with self.assertRaises(test_case.failureException):
             test_case.assertXmlEquivalentOutputs(wrong_namespace, expected)
+
+
+class TestIntegrationXmlTestCase(unittest.TestCase):
+    def test_full_document(self):
+        data = """<?xml version="1.0" encoding="UTF-8" ?>
+        <root xmlns="%s"xmlns:test="%s" rootAtt="attValue" test:rootAtt="nsValue">
+            <emptyElement />
+            <attrElement id="1" attr="simple" test:attr="namespaced" />
+            <textElement>assemblée</textElement>
+            <multipleElement />
+            <multipleElement />
+            <parent>
+                <emptyElement />
+                <attrElement id="2" attr="simple" test:attr="namespaced" uniqueAttr="" />
+                <textElement>text</textElement>
+                <multipleElement />
+                <multipleElement />
+            </parent>
+            <test:parent>
+                <emptyElement />
+                <attrElement id="3" attr="simple" test:attr="namespaced" />
+                <textElement>text</textElement>
+                <multipleElement />
+                <multipleElement />
+            </test:parent>
+        </root>""" % (DEFAULT_NS, TEST_NS)
+
+        test_case = XmlTestCase(methodName='assertXmlDocument')
+
+        # It is a valid document.
+        root = test_case.assertXmlDocument(data.encode('utf-8'))
+        # The root node has these namespaces
+        test_case.assertXmlNamespace(root, None, DEFAULT_NS)
+        test_case.assertXmlNamespace(root, 'test', TEST_NS)
+        # The root node has this attribute with this value
+        test_case.assertXmlHasAttribute(
+            root, 'rootAtt', expected_value='attValue')
+        # The root node has this test:attribute with this value
+        # Note that we can not use the test:rootAtt syntax and must rely on
+        # the {uri}rootAtt syntax instead.
+        # That's why XPath is better for us
+        test_case.assertXmlHasAttribute(
+            root, '{%s}rootAtt' % TEST_NS, expected_value='nsValue')
+
+        # Same tests on attributes with xpath
+        test_case.assertXpathsExist(root, [
+            '@rootAtt',  # No default namespace on attribute
+            '@test:rootAtt',  # rootAtt with test namespace
+            # There are many element with the ID attribute
+            '//@id',
+            # attrElement's attr
+            './ns:attrElement/@attr',
+            '//ns:attrElement[@attr]',
+            '//ns:parent/ns:attrElement/@attr',
+            '//test:parent/ns:attrElement/@attr',
+            # Specific values
+            '@rootAtt="attValue"',
+            '@test:rootAtt="nsValue"',
+        ])
+
+        # Let's play with XPath and attribute values
+        test_case.assertXpathsUniqueValue(root, [
+            # All ID are unique
+            '//@id',
+            # This takes only the direct children of <root>
+            './ns:attrElement/@attr',
+            # This takes only the children of <ns:parent>
+            '//ns:parent/ns:attrElement/@attr',
+            # This takes only the children of <test:parent>
+            '//test:parent/ns:attrElement/@attr',
+        ])
+
+        with self.assertRaises(test_case.failureException):
+            test_case.assertXpathsUniqueValue(root, [
+                # This take all attrElement in the tree
+                '//ns:attrElement/@attr',
+            ])
+
+        # Some node exists once and only once - it depends on the expression
+        test_case.assertXpathsOnlyOne(root, [
+            # Direct child
+            './ns:attrElement',
+            # All children, but with specific attribute's value
+            '//ns:attrElement[@id=1]',
+            '//ns:attrElement[@id=2]',
+            '//ns:attrElement[@id=3]',
+            # It is the only element with this attribute
+            '//ns:attrElement[@uniqueAttr]',
+            # This attribute is the only on under test:parent's node
+            '//test:parent/ns:attrElement',
+            '//test:parent/ns:attrElement[@id=3]',
+        ])
+
+        # Let's check @id's values
+        test_case.assertXpathValues(root, '//@id', ['1', '2', '3'])
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Unittest module for XML testing purpose."""
 from __future__ import unicode_literals
 
@@ -18,35 +19,47 @@ class XmlTestMixin(object):
     mixin class to add specific XML assertions.
     """
     default_partial_tag = 'partialTest'
+    error_encoding = 'utf-8'
 
     def fail_xpath_error(self, node, xpath, exception):
         """Format an xpath ``expression`` error for the given ``node``.
 
         This method should be used instead of the ``fail`` method.
         """
-        doc = etree.tostring(node, pretty_print=True)
+        doc = etree.tostring(
+            node, pretty_print=True, encoding=self.error_encoding)
         self.fail(
             'Invalid XPath expression for element %s: %s\n'
             'Xpath: %s\n'
             'Element:\n'
-            '%s' % (node.tag, str(exception), xpath, doc))
+            '%s' % (
+                node.tag,
+                str(exception),
+                xpath,
+                doc.decode(self.error_encoding)))
 
     def fail_xpath_not_found(self, node, expression):
-        doc = etree.tostring(node, pretty_print=True)
+        doc = etree.tostring(
+            node, pretty_print=True, encoding=self.error_encoding)
         self.fail(
             'No result found for XPath for element %s\n'
             'XPath: %s\n'
             'Element:\n'
-            '%s' % (node.tag, expression.path, doc))
+            '%s' % (
+                node.tag,
+                expression.path,
+                doc.decode(self.error_encoding)))
 
     def build_xpath_expressions(self, node, xpaths, default_ns_prefix='ns'):
         namespaces = dict(
             (prefix or default_ns_prefix, url)
             for prefix, url in node.nsmap.items())
-        return [
-            etree.XPath(xpath, namespaces=namespaces)
-            for xpath in xpaths
-        ]
+
+        for xpath in xpaths:
+            try:
+                yield etree.XPath(xpath, namespaces=namespaces)
+            except XPathSyntaxError as error:
+                self.fail_xpath_error(node, xpath, error)
 
     def build_xpath_expression(self, node, xpath, default_ns_prefix='ns'):
         namespaces = dict(
@@ -103,7 +116,7 @@ class XmlTestMixin(object):
         Argument `attribute` must be the attribute's name, with
         namespace's prefix (notation 'ns:att' and not '{uri}att').
         """
-        assert attribute in node.attrib
+        self.assertIn(attribute, node.attrib)
 
         if 'expected_value' in kwargs:
             self.assertEqual(node.attrib.get(attribute),
