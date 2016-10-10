@@ -73,5 +73,5 @@ Example:
             # Check namespace
             self.assertXmlNamespace(root, 'ns', 'uri')
             # Check
-            self.assertXpathsUniqueValue(root, ('./leaf@id', ))
-            self.assertXpathValues(root, './leaf@active', ('on', 'off'))
+            self.assertXpathsUniqueValue(root, ('./leaf/@id', ))
+            self.assertXpathValues(root, './leaf/@active', ('on', 'off'))
