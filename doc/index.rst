@@ -108,8 +108,8 @@ Example::
            self.assertXmlNamespace(root, 'ns', 'uri')
 
            # Check
-           self.assertXpathsUniqueValue(root, ('./leaf@id', ))
-           self.assertXpathValues(root, './leaf@active', ('on', 'off'))
+           self.assertXpathsUniqueValue(root, ('./leaf/@id', ))
+           self.assertXpathValues(root, './leaf/@active', ('on', 'off'))
 
 
 Alternativly, one can use the :py:class:`XmlTestMixin` instead of the
