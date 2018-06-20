@@ -40,5 +40,5 @@ setup(name='xmlunittest',
       url='http://python-xmlunittest.readthedocs.org/en/latest/',
       py_modules=['xmlunittest'],
       test_suite="test",
-      install_requires=['lxml>=2.3,<4.0.0'],
+      install_requires=['lxml>=2.3'],
       classifiers=classifiers)

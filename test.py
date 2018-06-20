@@ -1318,7 +1318,7 @@ class TestXmlTestCase(unittest.TestCase):
 class TestIntegrationXmlTestCase(unittest.TestCase):
     def test_full_document(self):
         data = """<?xml version="1.0" encoding="UTF-8" ?>
-        <root xmlns="%s"xmlns:test="%s" rootAtt="attValue" test:rootAtt="nsValue">
+        <root xmlns="%s" xmlns:test="%s" rootAtt="attValue" test:rootAtt="nsValue">
             <emptyElement />
             <attrElement id="1" attr="simple" test:attr="namespaced" />
             <textElement>assemblée</textElement>
