@@ -68,13 +68,12 @@ When dealing with version number, it appears that ``xmlunittest`` works with:
    lxml < 3.0. Also, note that this package is only tested with lxml >= 3.0.
    It works, but without warranty.
 
-Why not Python 3.3?
--------------------
+Why not Python 3.3 or 3.4?
+--------------------------
 
 This package works with Python 2.7, but it's only because we are lucky enough.
 This is a small project, and it does not aim to support more than one major
-version of python. The latest, the better!
-
+version of python.
 
 How to
 ======
@@ -181,7 +180,7 @@ perform tests on multiple version of python. Instead of using ``py.test`` do::
 
    $ tox test
 
-And that's all! **Remember: Python 2.7 and Python 3.4. Nothing more.**
+And that's all! **Remember: Python 2.7 and Python 3.5. Nothing more.**
 
 .. __: https://tox.readthedocs.org/en/latest/
 
@@ -190,7 +189,7 @@ Tips
 
 **Do**:
 
-* Always test with both Python 2.7 and Python 3.4 - use Tox!
+* Always test with both Python 2.7 and Python 3.5 - use Tox!
 * Always test with namespaces
 * Always provide unit-tests.
 * Always provide documentation.
