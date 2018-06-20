@@ -17,17 +17,16 @@ for our own reasons (folk says one can not simply uses XML, but still...).
 So, your code generates XML, and everything is fine. As you follow best
 practices (if you don’t, I think you should), you have written some good
 unit-tests, where you compare code’s result with an expected result. I mean you
-compare string with string. Do you see the issue here? If you don’t, well,
-good for you. I see a lot of issue with this approach.
+compare string with string. One day, something bad might happen.
 
 XML is not a simple string, it is a structured document. One can not simply
-compare two XML string and expect all being fine: attributes’s order can change
-unexpectedly, elements can be optional, and no one can explain simply how
-spaces and tabs works in XML formatting.
+compare two XML string and expect everything to be fine: attributes’s order can
+change unexpectedly, elements can be optional, and no one can explain simply
+how spaces and tabs works in XML formatting.
 
 Here comes XML unittest TestCase: if you want to use the built-in unittest
 package (or if it is a requirement), and you are not afraid of using xpath
-expression with lxml, this library is made for you.
+expression with ``lxml``, this library is made for you.
 
 You will be able to test your XML document, and use the power of xpath and
 various schema languages to write tests that matter.
@@ -46,8 +45,8 @@ How to
 
 - Extends ``xmlunittest.XmlTestCase``
 - Write your tests, using the function or method that generate XML document
-- Use xmlunittest.XmlTestCase‘s assertion methods to validate
-- Keep your test readable
+- Use ``xmlunittest.XmlTestCase``‘s assertion methods to validate
+- Keep your tests readable
 
 Example:
 

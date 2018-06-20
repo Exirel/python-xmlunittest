@@ -31,7 +31,7 @@ classifiers = [
 ]
 
 setup(name='xmlunittest',
-      version='0.4.0',
+      version='0.5.0',
       description='Library using lxml and unittest for unit testing XML.',
       long_description=read('README.rst'),
       author='Florian Strzelecki',
