@@ -67,7 +67,7 @@ Example:
             </root>"""
 
             # Everything starts with `assertXmlDocument`
-            root = self.assertXmlDocument(data)
+            root = self.assertXmlDocument(data.encode())
 
             # Check namespace
             self.assertXmlNamespace(root, 'ns', 'uri')
