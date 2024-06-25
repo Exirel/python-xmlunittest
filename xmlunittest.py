@@ -148,7 +148,7 @@ class XmlTestMixin(object):
                                                    default_ns_prefix)
         for expression in expressions:
             try:
-                if not expression.evaluate(node):
+                if not expression(node):
                     self.fail_xpath_not_found(node, expression)
             except etree.XPathEvalError as error:
                 self.fail_xpath_error(node, expression.path, error)
@@ -161,7 +161,7 @@ class XmlTestMixin(object):
 
         for expression in expressions:
             try:
-                results = expression.evaluate(node)
+                results = expression(node)
             except etree.XPathEvalError as error:
                 self.fail_xpath_error(node, expression.path, error)
 
@@ -187,7 +187,7 @@ class XmlTestMixin(object):
 
         for expression in expressions:
             try:
-                results = expression.evaluate(node)
+                results = expression(node)
             except etree.XPathEvalError as error:
                 self.fail_xpath_error(node, expression.path, error)
 
@@ -204,7 +204,7 @@ class XmlTestMixin(object):
                                                  xpath,
                                                  default_ns_prefix)
         try:
-            results = expression.evaluate(node)
+            results = expression(node)
         except etree.XPathEvalError as error:
             self.fail_xpath_error(node, expression.path, error)
 
