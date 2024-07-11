@@ -22,7 +22,7 @@ how spaces and tabs works in XML formatting.
 
 Here comes XML unittest TestCase: if you want to use the built-in unittest
 package (or if it is a requirement), and you are not afraid of using xpath
-expression with lxml, this library is made for you.
+expression with ``lxml``, this library is made for you.
 
 You will be able to test your XML document, and use the power of xpath and
 various schema languages to write tests that matter.
@@ -39,41 +39,9 @@ Links
 Compatibility
 =============
 
-Python ``xmlunittest`` has been tested with:
+Python ``xmlunittest`` has been tested with ``lxml`` version 4.0 and 5.0
+with Python 3.10.
 
-* ``lxml`` version 3.0, 3.4, 3.5 and 4.2.1
-* Python 2.7.12
-* Python 3.5.2
-
-Be aware: as a lot of string manipulation is involved, a lot of issues can
-happen with unicode/bytestring. It's always a bit tough when dealing with
-a Py2/Py3 compatible library.
-
-.. note::
-
-   Python 2.7.6 support is maintained for now, but it will be eventually
-   dropped. It's never too late to switch to Python 3!
-
-LXML version 2.x or 3.x?
-------------------------
-
-When dealing with version number, it appears that ``xmlunittest`` works with:
-
-* Python 2.7 and lxml 2.3.5 and above.
-* Python 3.5 and lmxl 3.0 and above.
-
-.. warning::
-
-   No, ``xmlunittest`` **does not work** with Python 3 and an older version of
-   lxml < 3.0. Also, note that this package is only tested with lxml >= 3.0.
-   It works, but without warranty.
-
-Why not Python 3.3 or 3.4?
---------------------------
-
-This package works with Python 2.7, but it's only because we are lucky enough.
-This is a small project, and it does not aim to support more than one major
-version of python.
 
 How to
 ======
@@ -100,7 +68,7 @@ Example::
            </root>"""
 
            # Everything starts with `assertXmlDocument`
-           root = self.assertXmlDocument(data)
+           root = self.assertXmlDocument(data.encode('utf-8'))
 
            # Check namespace
            self.assertXmlNamespace(root, 'ns', 'uri')
@@ -137,7 +105,7 @@ Example::
                <leaf id="3" active="off" />
            </root>"""
 
-           self.assertXmlDocument(data)
+           self.assertXmlDocument(data.encode('utf-8'))
 
 
 Contribute
@@ -160,7 +128,7 @@ See an example of install (without virtualenv)::
    $ git clone git@github.com:YourRepo/python-xmlunittest.git xmlunittest
    $ cd xmlunittest
    $ pip install -r requirements.txt
-   $ py.test test.py
+   $ pytest test.py
    ... all should be green here!
 
 .. __: https://github.com/Exirel/python-xmlunittest
@@ -170,36 +138,3 @@ See an example of install (without virtualenv)::
    Installing lxml is not easy if you are not prepared. You will need some
    extra source package on your favorite OS (in particular some XML libs and
    python sources).
-
-
-Testing with tox
-----------------
-
-Now that ``xmlunittest`` uses `tox`__ to run the tests, it's even easier to
-perform tests on multiple version of python. Instead of using ``py.test`` do::
-
-   $ tox test
-
-And that's all! **Remember: Python 2.7 and Python 3.5. Nothing more.**
-
-.. __: https://tox.readthedocs.org/en/latest/
-
-Tips
-----
-
-**Do**:
-
-* Always test with both Python 2.7 and Python 3.5 - use Tox!
-* Always test with namespaces
-* Always provide unit-tests.
-* Always provide documentation.
-* It's better to respect PEP8.
-
-**Don't**:
-
-* Never add any other library. ``xmlunittest`` uses ``lxml`` and that's enough!
-* If you have to add a ``data.encode(charset)`` into an assert method, it's
-  probably not a good idea.
-* XML documents can not be compared as simple strings. Don't compare them
-  as simple string. **Don't.**
-* Don't write more than 80 characters per line. Please. **Don't.**

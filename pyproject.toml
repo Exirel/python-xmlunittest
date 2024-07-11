@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools~=66.1", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+platforms = ["Linux x86, x86-64"]
+
+[tool.setuptools.packages.find]
+include = ["xmlunittest"]
+namespaces = false
+
+[project]
+name = "xmlunittest"
+version = "1.0.0.dev0"
+description = "Library using lxml and unittest for unit testing XML."
+maintainers = [
+  { name="Florian Strzelecki" },
+]
+authors = [
+  { name="Florian Strzelecki" },
+]
+readme = "README.rst"
+license = { text="MIT" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Pytest",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Testing :: Unit",
+    "Topic :: Text Processing :: Markup :: XML",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "lxml>=4.0",
+]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/Exirel/python-xmlunittest/issues"
+"Source" = "https://github.com/Exirel/python-xmlunittest"
