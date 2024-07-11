@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
 """Unittest module for XML testing purpose."""
-from __future__ import unicode_literals
-
 import io
 import unittest
 
@@ -12,7 +9,7 @@ from lxml.etree import XMLSyntaxError, XPathSyntaxError
 __all__ = ['XmlTestMixin', 'XmlTestCase']
 
 
-class XmlTestMixin(object):
+class XmlTestMixin:
     """Base mixin class for XML unittest.
 
     One may want to extends unittest.TestCase itself, and then uses this
@@ -305,4 +302,3 @@ class XmlTestCase(unittest.TestCase, XmlTestMixin):
 
     XML parsing uses python lxml.etree.
     """
-    pass
