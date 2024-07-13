@@ -2,16 +2,9 @@
 requires = ["setuptools~=66.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-platforms = ["Linux x86, x86-64"]
-
-[tool.setuptools.packages.find]
-include = ["xmlunittest"]
-namespaces = false
-
 [project]
 name = "xmlunittest"
-version = "1.0.0"
+version = "1.0.1"
 description = "Library using lxml and unittest for unit testing XML."
 maintainers = [
   { name="Florian Strzelecki" },
