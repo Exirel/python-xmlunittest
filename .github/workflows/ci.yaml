@@ -39,7 +39,7 @@ jobs:
           python -m pip install -e .
       - name: Lint
         run: |
-          isort -c xmlunittest.py
-          flake8 xmlunittest.py
+          isort -c src/
+          flake8 src/
       - name: Test
         run: pytest test.py
